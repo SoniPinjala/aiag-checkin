@@ -164,6 +164,14 @@
 
   function renderDiet() {
     const host = $("diet-list");
+
+    // The dashboard re-renders every 10s, and replacing innerHTML
+    // throws away which <details> the reader had open -- so a row
+    // expanded to read names would snap shut mid-sentence. Snapshot
+    // the open ones and put them back.
+    const wasOpen = new Set(
+      [...host.querySelectorAll("details[open][data-key]")].map((el) => el.dataset.key)
+    );
     const people = roster
       .filter((r) => dietScope === "reg" || r.checked_in_at)
       .map((r) => ({
@@ -186,7 +194,7 @@
       return `<div class="dgroup">
         <h3>${esc(g.label)}</h3>
         ${g.rows.map((r) => `
-          <details class="drow ${r.group}">
+          <details class="drow ${r.group}" data-key="cat:${r.key}">
             <summary>
               <span class="dlabel">${esc(r.label)}</span>
               <span class="dbar"><i style="width:${Math.round(r.count / max * 100)}%"></i></span>
@@ -201,7 +209,7 @@
     // on the closed row: that is where a restriction the rules did
     // not recognise shows up, and a bare label would be scrolled past.
     const uncat = d.uncategorized.length ? `
-      <details class="dfoot">
+      <details class="dfoot" data-key="uncat">
         <summary>Uncategorized <span class="n">${d.uncategorized.length}</span></summary>
         <ul class="dpeople">${d.uncategorized.map(li).join("")}</ul>
       </details>` : "";
@@ -213,10 +221,14 @@
       in more than one row, so these do not sum to ${d.total}.</p>`;
 
     host.innerHTML = caveat + d.groups.map(group).join("") + uncat + `
-      <details class="dfoot">
+      <details class="dfoot" data-key="all">
         <summary>All notes <span class="n">${d.total}</span></summary>
         <ul class="dpeople">${d.all.map(li).join("")}</ul>
       </details>`;
+
+    host.querySelectorAll("details[data-key]").forEach((el) => {
+      if (wasOpen.has(el.dataset.key)) el.open = true;
+    });
   }
 
   /* ---------- roster + manual check-in --------------------- */
