@@ -106,6 +106,36 @@ year; see *Next year* below.
 
 ---
 
+## Giving staff access
+
+Nobody — including you — needs to open the Supabase dashboard.
+
+```bash
+node tools/staff.mjs list
+node tools/staff.mjs add    colleague@uark.edu
+node tools/staff.mjs reset  colleague@uark.edu
+node tools/staff.mjs remove colleague@uark.edu
+```
+
+`add` generates a readable password (`garnet-indigo-cedar-7071`) and prints a
+message you can paste straight to the person. They go to `admin.html`, sign in,
+done. `reset` issues a new one if it's lost; `remove` revokes access
+immediately.
+
+Every account has equal access — there are no privilege tiers, so adding
+someone means trusting them with the full attendee list.
+
+**Why passwords and not emailed sign-in codes?** Supabase's built-in mailer
+sends **2 emails per hour**. Three staff signing in on event morning would
+leave the third waiting an hour. Passwordless is the nicer flow, and worth
+switching to once custom SMTP is configured — until then, a password is the
+thing that cannot fail at 8am.
+
+Self-signup stays disabled in the dashboard. An account must exist before
+anyone can sign in at all.
+
+---
+
 ## Importing pre-registrations
 
 Microsoft Forms exports `.xlsx` — open it and **File → Save As → CSV UTF-8**.

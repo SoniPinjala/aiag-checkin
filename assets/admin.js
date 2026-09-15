@@ -45,6 +45,14 @@
     $("gate").hidden = true;
     $("dash").hidden = false;
 
+    // Name the signed-in account. On a shared desk laptop this is
+    // the difference between "am I logged in as me?" and guessing.
+    const whoEl = $("who");
+    if (whoEl && session.user && session.user.email) {
+      whoEl.textContent = session.user.email;
+      whoEl.title = session.user.email;
+    }
+
     const { data: events, error } = await db
       .from("events").select("id,name,event_date,series").order("event_date", { ascending: false });
 

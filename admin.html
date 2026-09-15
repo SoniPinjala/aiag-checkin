@@ -14,13 +14,47 @@
   /* Admin is data-dense, so it opts out of the centered card layout. */
   .admin { max-width: 1180px; margin: 0 auto; padding: 22px 18px 70px; position: relative; z-index: 1; }
 
-  .topbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; }
-  .topbar h1 { font-size: 21px; margin: 0; flex: 1 1 auto; }
+  .topbar { display: flex; align-items: center; gap: 14px 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .topbar h1 { font-size: 21px; margin: 0; }
+  .topbar .title { flex: 1 1 260px; min-width: 0; }
+
+  /* Group the actions so they wrap TOGETHER. Left to itself,
+     flex-wrap stranded "Sign out" alone on a second row under
+     the logo, where it read as an orphan. */
+  .topbar .actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  /* Account sits apart from the actions -- signing out next to
+     "Export CSV" is both easy to hit by mistake and the wrong
+     mental grouping. Naming the signed-in user also matters on a
+     shared desk laptop, where "whose session is this?" is a real
+     question. */
+  .topbar .account { display: flex; align-items: center; gap: 10px;
+                     margin-left: auto; padding-left: 16px;
+                     border-left: 1px solid var(--line); }
+  .topbar .who { font-size: 12px; color: var(--text-faint);
+                 font-family: var(--mono); max-width: 180px;
+                 overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar .account .btn { font-size: 13px; padding: 8px 13px; min-height: 38px; }
+  @media (max-width: 720px) {
+    /* Stack: picker on its own full-width row, then the buttons. */
+    .topbar .actions { width: 100%; }
+    .topbar select    { flex: 1 1 100%; width: 100%; min-width: 0; }
+    .topbar .account { margin-left: 0; padding-left: 0; border-left: 0;
+                       width: 100%; justify-content: space-between;
+                       border-top: 1px solid var(--line); padding-top: 12px; }
+    .topbar .who { max-width: none; }
+  }
   .topbar .kicker { font-family: var(--mono); font-size: 10.5px; letter-spacing:.16em;
                     text-transform: uppercase; color: var(--grain); display: block; margin-bottom: 3px; }
   .topbar .logo { height: 34px; width: auto; opacity: .9; margin-right: 4px; }
   @media (max-width: 620px) { .topbar .logo { height: 28px; } }
-  .topbar select { width: auto; min-width: 210px; min-height: 42px; font-size: 14.5px; padding: 8px 40px 8px 13px; }
+  /* A <select> sizes itself to its LONGEST option, and the event
+     names are long -- left alone it grew to 469px and pushed the
+     whole page sideways on a phone. Cap it and let it shrink. */
+  .topbar select { width: auto; min-width: 210px; max-width: 100%;
+                   min-height: 42px; font-size: 14.5px;
+                   padding: 8px 40px 8px 13px;
+                   text-overflow: ellipsis; }
   .topbar .btn  { width: auto; min-height: 42px; font-size: 14px; padding: 9px 16px; }
 
   /* min-width:0 is load-bearing: grid and flex children default to
@@ -147,14 +181,21 @@
   <div class="topbar">
     <img class="logo" src="assets/cada-logo.png"
          alt="Center for Agricultural Data Analytics">
-    <div style="flex:1 1 auto">
+    <div class="title">
       <span class="kicker">Staff Dashboard</span>
       <h1 id="ev-name">&nbsp;</h1>
     </div>
-    <select id="ev-pick" aria-label="Select event year"></select>
-    <button class="btn ghost mini" id="btn-refresh" type="button">Refresh</button>
-    <button class="btn mini" id="btn-csv" type="button">Export CSV</button>
-    <button class="btn ghost mini" id="btn-out" type="button">Sign out</button>
+
+    <div class="actions">
+      <select id="ev-pick" aria-label="Select event"></select>
+      <button class="btn ghost mini" id="btn-refresh" type="button">Refresh</button>
+      <button class="btn mini" id="btn-csv" type="button">Export CSV</button>
+    </div>
+
+    <div class="account">
+      <span class="who" id="who" title=""></span>
+      <button class="btn ghost mini" id="btn-out" type="button">Sign out</button>
+    </div>
   </div>
 
   <div class="tiles" id="tiles"></div>
