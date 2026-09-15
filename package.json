@@ -8,7 +8,8 @@
     "serve": "python3 -m http.server 8000",
     "qr": "node tools/make-qr.mjs",
     "import": "node tools/import-prereg.mjs",
-    "staff": "node tools/staff.mjs"
+    "staff": "node tools/staff.mjs",
+    "test": "node tools/test-diet.cjs"
   },
   "devDependencies": {
     "qrcode": "^1.5.4"

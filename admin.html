@@ -152,6 +152,62 @@
   label .soft { font-weight: 500; text-transform: none; letter-spacing: 0;
                 color: var(--text-faint); font-size: 11.5px; }
 
+  /* ---- dietary breakdown ---- */
+  .phead { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+  .phead > div:first-child { flex: 1 1 240px; }
+
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px;
+         overflow: hidden; background: rgba(8,5,4,.4); }
+  .seg button { appearance: none; border: 0; background: transparent; cursor: pointer;
+                font-family: var(--sans); font-size: 12.5px; font-weight: 600;
+                color: var(--text-dim); padding: 8px 14px; min-height: 36px;
+                transition: background .15s, color .15s; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button[aria-pressed="true"] { background: rgba(199,67,87,.22); color: var(--text); }
+
+  .dgroup { margin-top: 14px; }
+  .dgroup h3 { margin: 0 0 2px; font-size: 11px; font-weight: 700; letter-spacing: .09em;
+               text-transform: uppercase; color: var(--text-dim); }
+  .overlap { margin: 2px 0 4px; font-size: 11.5px; color: var(--text-faint); }
+
+  .drow { border-top: 1px solid rgba(255,238,230,.08); }
+  .drow > summary { display: flex; align-items: center; gap: 12px; cursor: pointer;
+                    padding: 9px 2px; list-style: none; min-height: 40px; }
+  .drow > summary::-webkit-details-marker { display: none; }
+  .drow > summary::before { content: "▸"; color: var(--text-faint); font-size: 11px;
+                            transition: transform .15s; flex: 0 0 auto; }
+  .drow[open] > summary::before { transform: rotate(90deg); }
+  .dlabel { flex: 0 0 150px; font-size: 13.5px; font-weight: 600; }
+  .dbar   { flex: 1 1 auto; height: 8px; border-radius: 4px;
+            background: rgba(255,238,230,.07); overflow: hidden; min-width: 40px; }
+  .dbar i { display: block; height: 100%; border-radius: 4px; }
+  .drow.allergy .dbar i { background: #C74357; }
+  .drow.pref    .dbar i { background: #4098D4; }
+  .dcount { flex: 0 0 34px; text-align: right; font-size: 14px; font-weight: 700;
+            font-variant-numeric: tabular-nums; }
+
+  .dpeople { margin: 0 0 10px; padding: 2px 0 2px 22px; list-style: none; }
+  .dpeople li { padding: 5px 0; font-size: 13px; display: flex; gap: 10px;
+                flex-wrap: wrap; border-top: 1px solid rgba(255,238,230,.05); }
+  .dpeople .nm { font-weight: 600; flex: 0 0 auto; }
+  .dpeople .dnote { color: var(--text-dim); font-style: italic; }
+
+  .dfoot { margin-top: 14px; border-top: 1px solid rgba(255,238,230,.08); }
+  .dfoot summary { display: flex; align-items: center; gap: 10px; cursor: pointer;
+                   padding: 11px 2px; list-style: none; font-size: 13px;
+                   color: var(--text-dim); min-height: 42px; }
+  .dfoot summary::-webkit-details-marker { display: none; }
+  .dfoot summary::before { content: "▸"; font-size: 11px; color: var(--text-faint);
+                           transition: transform .15s; }
+  .dfoot[open] summary::before { transform: rotate(90deg); }
+  .dfoot .n { margin-left: auto; font-variant-numeric: tabular-nums;
+              font-weight: 700; color: var(--text); }
+
+  @media (max-width: 620px) {
+    .dlabel { flex: 0 0 110px; font-size: 13px; }
+    .dpeople { padding-left: 14px; }
+  }
+
   .stale { color: var(--warn); }
   .login { max-width: 400px; margin: 9vh auto 0; }
 </style>
@@ -234,8 +290,16 @@
     </section>
 
     <section class="panel span2" id="p-diet">
-      <h2>Dietary restrictions</h2>
-      <p class="note">Hand this to catering before lunch.</p>
+      <div class="phead">
+        <div>
+          <h2>Dietary restrictions</h2>
+          <p class="note">Hand this to catering before lunch.</p>
+        </div>
+        <div class="seg" role="group" aria-label="Which headcount to count">
+          <button type="button" id="diet-reg" aria-pressed="true">Registered</button>
+          <button type="button" id="diet-in"  aria-pressed="false">Checked in</button>
+        </div>
+      </div>
       <div id="diet-list"></div>
     </section>
   </div>
@@ -265,6 +329,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="assets/config.js"></script>
 <script src="assets/charts.js"></script>
+<script src="assets/diet.js"></script>
 <script src="assets/admin.js"></script>
 </body>
 </html>

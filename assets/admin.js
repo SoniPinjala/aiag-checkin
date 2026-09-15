@@ -102,7 +102,7 @@
       roster = rows.data || [];
       renderTiles(stats.data);
       renderCharts(stats.data);
-      renderDiet(stats.data);
+      renderDiet();
       applyFilter();
       $("footnote").innerHTML = "Updated " +
         new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" }) +
@@ -145,15 +145,78 @@
     });
   }
 
-  function renderDiet(s) {
-    const list = s.dietary_list || [];
-    if (!list.length) {
-      $("diet-list").innerHTML = '<p class="empty">Nobody has flagged a dietary restriction.</p>';
+  /* ---------- dietary breakdown ---------------------------- */
+  // Reads from `roster`, not stats.dietary_list -- the RPC's list
+  // carries no check-in state, and the Registered/Checked-in
+  // toggle needs it. Everything here is derived at render time;
+  // nothing about categories is stored.
+  let dietScope = "reg";   // "reg" | "in"
+
+  $("diet-reg").addEventListener("click", () => setDietScope("reg"));
+  $("diet-in").addEventListener("click",  () => setDietScope("in"));
+
+  function setDietScope(v) {
+    dietScope = v;
+    $("diet-reg").setAttribute("aria-pressed", String(v === "reg"));
+    $("diet-in").setAttribute("aria-pressed",  String(v === "in"));
+    renderDiet();
+  }
+
+  function renderDiet() {
+    const host = $("diet-list");
+    const people = roster
+      .filter((r) => dietScope === "reg" || r.checked_in_at)
+      .map((r) => ({
+        name: `${r.first_name} ${r.last_name || ""}`.trim(),
+        note: r.dietary_restrictions
+      }));
+
+    const d = window.Diet.summarize(people);
+
+    if (!d.total) {
+      host.innerHTML = '<p class="empty">Nobody in this view has flagged a restriction.</p>';
       return;
     }
-    $("diet-list").innerHTML = `<div class="tablewrap"><table><tbody>${
-      list.map((d) => `<tr><td style="width:34%"><span class="nm">${esc(d.name)}</span></td>
-        <td>${esc(d.note)}</td></tr>`).join("")}</tbody></table></div>`;
+
+    const li = (p) => `<li><span class="nm">${esc(p.name)}</span>` +
+                      `<span class="dnote">${esc(p.note)}</span></li>`;
+
+    const group = (g) => {
+      const max = Math.max(...g.rows.map((r) => r.count));
+      return `<div class="dgroup">
+        <h3>${esc(g.label)}</h3>
+        ${g.rows.map((r) => `
+          <details class="drow ${r.group}">
+            <summary>
+              <span class="dlabel">${esc(r.label)}</span>
+              <span class="dbar"><i style="width:${Math.round(r.count / max * 100)}%"></i></span>
+              <span class="dcount">${r.count}</span>
+            </summary>
+            <ul class="dpeople">${r.people.map(li).join("")}</ul>
+          </details>`).join("")}
+      </div>`;
+    };
+
+    // Uncategorized is collapsed like the rest, but its COUNT stays
+    // on the closed row: that is where a restriction the rules did
+    // not recognise shows up, and a bare label would be scrolled past.
+    const uncat = d.uncategorized.length ? `
+      <details class="dfoot">
+        <summary>Uncategorized <span class="n">${d.uncategorized.length}</span></summary>
+        <ul class="dpeople">${d.uncategorized.map(li).join("")}</ul>
+      </details>` : "";
+
+    // Said once, at the top: "gluten-free, no shellfish" is counted
+    // in two rows, so these deliberately do not sum to the total.
+    // A number that looks like a total but is not is worse than none.
+    const caveat = `<p class="overlap">Counts overlap &mdash; one note can appear
+      in more than one row, so these do not sum to ${d.total}.</p>`;
+
+    host.innerHTML = caveat + d.groups.map(group).join("") + uncat + `
+      <details class="dfoot">
+        <summary>All notes <span class="n">${d.total}</span></summary>
+        <ul class="dpeople">${d.all.map(li).join("")}</ul>
+      </details>`;
   }
 
   /* ---------- roster + manual check-in --------------------- */
@@ -208,8 +271,13 @@
   $("btn-csv").addEventListener("click", () => {
     // quote everything: free-text answers are full of commas
     const cell = (v) => v == null ? "" : `"${String(v).replace(/"/g, '""')}"`;
-    const csv = [COLS.join(",")]
-      .concat(roster.map((r) => COLS.map((c) => cell(r[c])).join(",")))
+    // Include the derived categories so a spreadsheet can be
+    // filtered the same way the panel groups things.
+    const head = COLS.concat("dietary_categories");
+    const csv = [head.join(",")]
+      .concat(roster.map((r) => COLS.map((c) => cell(r[c]))
+        .concat(cell(window.Diet.categorize(r.dietary_restrictions).join("; ")))
+        .join(",")))
       .join("\r\n");
 
     const url = URL.createObjectURL(new Blob(["﻿" + csv],
