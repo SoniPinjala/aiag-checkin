@@ -60,26 +60,48 @@
           <input id="r-last" type="text" autocomplete="family-name" required>
         </div>
 
-        <div class="field">
-          <label for="r-title">Job title</label>
-          <input id="r-title" type="text" autocomplete="organization-title">
+        <!-- Symposium questions. Shown only for ?s=symposium -->
+        <div data-series="symposium">
+          <div class="field">
+            <label for="r-title">Job title</label>
+            <input id="r-title" type="text" autocomplete="organization-title">
+          </div>
+
+          <div class="field">
+            <label for="r-org">Company / organization</label>
+            <input id="r-org" type="text" autocomplete="organization">
+          </div>
+
+          <div class="field">
+            <label for="r-acad">Academic background / field of study</label>
+            <input id="r-acad" type="text">
+          </div>
+
+          <div class="field">
+            <label id="rec-label">Attending the 5&nbsp;PM reception?</label>
+            <div class="choice" role="group" aria-labelledby="rec-label">
+              <button type="button" id="rec-yes" aria-pressed="false">Yes</button>
+              <button type="button" id="rec-no"  aria-pressed="false">No</button>
+            </div>
+          </div>
         </div>
 
-        <div class="field">
-          <label for="r-org">Company / organization</label>
-          <input id="r-org" type="text" autocomplete="organization">
-        </div>
+        <!-- Hackathon questions. Shown only for ?s=hackathon -->
+        <div data-series="hackathon" hidden>
+          <div class="field">
+            <label for="r-college">College</label>
+            <input id="r-college" type="text">
+          </div>
 
-        <div class="field">
-          <label for="r-acad">Academic background / field of study</label>
-          <input id="r-acad" type="text">
-        </div>
+          <div class="field">
+            <label for="r-program">MS / PhD program (major)</label>
+            <input id="r-program" type="text">
+          </div>
 
-        <div class="field">
-          <label id="rec-label">Attending the 5&nbsp;PM reception?</label>
-          <div class="choice" role="group" aria-labelledby="rec-label">
-            <button type="button" id="rec-yes" aria-pressed="false">Yes</button>
-            <button type="button" id="rec-no"  aria-pressed="false">No</button>
+          <div class="field">
+            <label for="r-background">Your background</label>
+            <input id="r-background" type="text"
+                   placeholder="Machine learning, agronomy, robotics&hellip;">
           </div>
         </div>
 

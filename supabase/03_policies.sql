@@ -77,13 +77,15 @@ revoke all on function public.keepalive()                      from public;
 revoke all on function public.event_stats(text)                from public;
 revoke all on function public.staff_checkin(uuid)              from public;
 revoke all on function public.register_and_checkin(
-  text, text, text, text, text, text, text, text, boolean, text, text
+  text, text, text, text, text, text, text, text, boolean,
+  text, text, text, text, text
 ) from public;
 
 -- the attendee page: exactly these three, nothing else
 grant execute on function public.checkin_lookup(text, text, text) to anon;
 grant execute on function public.register_and_checkin(
-  text, text, text, text, text, text, text, text, boolean, text, text
+  text, text, text, text, text, text, text, text, boolean,
+  text, text, text, text, text
 ) to anon;
 grant execute on function public.keepalive() to anon;
 

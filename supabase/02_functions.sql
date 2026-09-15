@@ -92,10 +92,16 @@ create or replace function public.register_and_checkin(
   p_email                text,
   p_first_name           text,
   p_last_name            text,
+  -- symposium
   p_job_title            text default null,
   p_organization         text default null,
   p_academic_background  text default null,
   p_attending_reception  boolean default null,
+  -- hackathon
+  p_college              text default null,
+  p_program              text default null,
+  p_background           text default null,
+  -- both
   p_dietary_restrictions text default null,
   p_heard_from           text default null
 ) returns jsonb
@@ -128,8 +134,9 @@ begin
 
   insert into public.attendees (
     event_id, email, first_name, last_name,
-    job_title, organization, academic_background,
-    attending_reception, dietary_restrictions, heard_from,
+    job_title, organization, academic_background, attending_reception,
+    college, program, background,
+    dietary_restrictions, heard_from,
     source, checked_in_at, checkin_method
   ) values (
     v_event, v_email, v_first, v_last,
@@ -137,6 +144,9 @@ begin
     nullif(trim(coalesce(p_organization, '')), ''),
     nullif(trim(coalesce(p_academic_background, '')), ''),
     p_attending_reception,
+    nullif(trim(coalesce(p_college, '')), ''),
+    nullif(trim(coalesce(p_program, '')), ''),
+    nullif(trim(coalesce(p_background, '')), ''),
     nullif(trim(coalesce(p_dietary_restrictions, '')), ''),
     nullif(trim(coalesce(p_heard_from, '')), ''),
     'onsite', now(), 'self'

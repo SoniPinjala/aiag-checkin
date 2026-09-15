@@ -17,11 +17,12 @@
 
   const $ = (id) => document.getElementById(id);
 
-  /* ---- token ----------------------------------------------- */
-  // The QR carries ONLY the token -- no event id. The database
-  // decides which symposium that means, so the printed sign is
-  // permanent: next year is one UPDATE, not a reprint.
-  // Remember it so a bookmarked visit still works on the day.
+  /* ---- token + series -------------------------------------- */
+  // The QR carries a token and a SERIES ("hackathon" /
+  // "symposium") -- never a year. The database resolves which
+  // event that means, so both printed signs are permanent: next
+  // year is one UPDATE, not a reprint.
+  // Remembered so a bookmarked visit still works on the day.
   const params = new URLSearchParams(location.search);
   const token  = params.get("k") || localStorage.getItem("aiag_token")  || "";
   const series = params.get("s") || localStorage.getItem("aiag_series") || "";
@@ -34,6 +35,15 @@
   // wrong event with a cheerful "you're in".
   const EVENT_LABEL = { hackathon: "AI in Ag Hackathon",
                         symposium: "AI in Agriculture Symposium" }[series] || "";
+
+  // The two events ask different things of a walk-up: the
+  // symposium wants job title, employer and the 5 PM reception;
+  // the hackathon wants college, degree program and background.
+  // Showing the wrong set is how a hackathon student ends up
+  // being asked which company they work for.
+  document.querySelectorAll("[data-series]").forEach((el) => {
+    el.hidden = el.dataset.series !== series;
+  });
 
   /* ---- state machine -------------------------------------- */
   const STATES = ["s-email", "s-register", "s-success", "s-already", "s-error"];
@@ -108,7 +118,7 @@
       // today" -- from the attendee's side those are the same
       // situation, and the sign stays up all year.
       case "no_active_event":
-        fail(null, "Check-in isn't open right now. If the symposium is " +
+        fail(null, "Check-in isn't open right now. If the event is " +
                    "running today, please ask a staff member for help.");
         return true;
       default: return false;
@@ -214,16 +224,26 @@
     const heardSel = $("r-heard").value;
     const heard = heardSel === "__other" ? $("r-heard-other").value.trim() : heardSel;
 
+    // Only ever send the hidden group's values as null -- a
+    // stale value from the other event's fields would be stored
+    // against a person who was never asked the question.
+    const sym  = series === "symposium";
+    const hack = series === "hackathon";
+    const val  = (id, when) => (when && $(id).value.trim()) || null;
+
     doRegister({
       p_token: token,
       p_series: series,
       p_email: pendingEmail,
       p_first_name: first,
       p_last_name: last,
-      p_job_title: $("r-title").value.trim() || null,
-      p_organization: $("r-org").value.trim() || null,
-      p_academic_background: $("r-acad").value.trim() || null,
-      p_attending_reception: reception,
+      p_job_title:           val("r-title",      sym),
+      p_organization:        val("r-org",        sym),
+      p_academic_background: val("r-acad",       sym),
+      p_attending_reception: sym ? reception : null,
+      p_college:             val("r-college",    hack),
+      p_program:             val("r-program",    hack),
+      p_background:          val("r-background", hack),
       p_dietary_restrictions: $("r-diet").value.trim() || null,
       p_heard_from: heard || null
     });
