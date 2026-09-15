@@ -1,36 +1,42 @@
 /* =============================================================
    AI in Agriculture Symposium — shared visual system
-   Palette lifted from the live event page:
-     Arkansas Cardinal #9D2235  (dominant)
-     CADA deep blue    #00547A
-     CADA cyan         #58A9DE
+   Palette taken from the CADA logo itself: cardinal + black,
+   with a green drawn from the seedling inside the "A", and a
+   grain gold for warmth. Deliberately no blue -- CADA's identity
+   has none.
    Phone-first, thumb-first. Nothing above the fold but the
    field and the button.
    ============================================================= */
 
 :root {
+  /* CADA's own identity is cardinal + black -- no blue. The green
+     echoes the seedling inside the "A" of the logo. It is used as
+     a BRAND accent only; it never encodes data against the red,
+     because red/green is the classic deutan confusion pair
+     (measured dE 8.0 -- see the note in charts.js). */
   --cardinal:    #9D2235;
   --cardinal-lt: #C74357;
-  --deep:        #00547A;
-  --cyan:        #58A9DE;
-  --cyan-soft:   #8FC9EC;
+  --sprout:      #4FA96B;
+  --sprout-lt:   #7BC490;
+  --grain:       #D8A657;
 
-  --bg:          #0A0E14;
-  --bg-2:        #0E141D;
-  --surface:     rgba(255, 255, 255, 0.045);
-  --surface-2:   rgba(255, 255, 255, 0.075);
-  --line:        rgba(255, 255, 255, 0.12);
+  /* warm near-black -- soil, not a spaceship */
+  --bg:          #100C0B;
+  --bg-2:        #16110F;
+  --surface:     rgba(255, 244, 238, 0.045);
+  --surface-2:   rgba(255, 244, 238, 0.075);
+  --line:        rgba(255, 238, 230, 0.13);
 
-  --text:        #EEF3F8;
-  --text-dim:    #9BA9BA;
-  --text-faint:  #64748B;
+  --text:        #F6EFEA;
+  --text-dim:    #B3A49C;
+  --text-faint:  #7C6E67;
 
-  --ok:          #34D399;
-  --warn:        #FBBF24;
-  --err:         #F87171;
+  --ok:          #4FA96B;
+  --warn:        #D8A657;
+  --err:         #E8697A;
 
   --radius:      18px;
-  --tap:         56px;          /* minimum touch target */
+  --tap:         56px;
   --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 }
@@ -47,7 +53,7 @@ html, body {
   text-rendering: optimizeLegibility;
 }
 
-/* ambient gradient mesh -------------------------------------- */
+/* ambient warmth: low sun over a field ------------------------ */
 body::before {
   content: "";
   position: fixed;
@@ -55,18 +61,20 @@ body::before {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(38rem 38rem at 18% 12%, rgba(157, 34, 53, 0.30), transparent 62%),
-    radial-gradient(34rem 34rem at 84% 22%, rgba(0, 84, 122, 0.36),  transparent 64%),
-    radial-gradient(30rem 30rem at 62% 92%, rgba(88, 169, 222, 0.18), transparent 66%);
-  filter: blur(28px);
-  animation: drift 26s ease-in-out infinite alternate;
+    radial-gradient(40rem 40rem at 16% 8%,  rgba(157, 34, 53, 0.34), transparent 62%),
+    radial-gradient(32rem 32rem at 86% 18%, rgba(216, 166, 87, 0.16), transparent 64%),
+    radial-gradient(34rem 34rem at 60% 98%, rgba(79, 169, 107, 0.20), transparent 68%);
+  filter: blur(30px);
+  animation: drift 30s ease-in-out infinite alternate;
 }
 @keyframes drift {
   from { transform: translate3d(0, 0, 0) scale(1); }
-  to   { transform: translate3d(2.5%, -2%, 0) scale(1.08); }
+  to   { transform: translate3d(2%, -1.5%, 0) scale(1.07); }
 }
 
-/* faint grid, reads as "instrument panel" -------------------- */
+/* crop rows receding toward a horizon, plus the ascending bars
+   from CADA's own mark. Both sit far back at low opacity -- the
+   card is the subject, this is just the field it stands in. ---- */
 body::after {
   content: "";
   position: fixed;
@@ -74,10 +82,30 @@ body::after {
   z-index: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px);
-  background-size: 52px 52px;
-  mask-image: radial-gradient(circle at 50% 30%, #000 20%, transparent 78%);
+    repeating-linear-gradient(94deg,
+      rgba(255, 238, 230, .05) 0 1px, transparent 1px 46px),
+    repeating-linear-gradient(86deg,
+      rgba(79, 169, 107, .045) 0 1px, transparent 1px 46px);
+  mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,.35) 34%, transparent 62%);
+}
+
+/* the rising bar chart from the CADA logo, as a quiet footer rule */
+.rows {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 86px;
+  z-index: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  padding: 0 6vw;
+  opacity: .16;
+}
+.rows i {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(180deg, var(--cardinal-lt), transparent);
 }
 
 /* layout ------------------------------------------------------ */
@@ -100,13 +128,13 @@ body::after {
   text-align: center;
   flex-direction: column;
 }
-.brand img { height: 40px; width: auto; opacity: .95; }
+.brand img { height: 46px; width: auto; max-width: 78vw; opacity: .96; }
 .brand .kicker {
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: .18em;
+  font-size: 10.5px;
+  letter-spacing: .15em;
   text-transform: uppercase;
-  color: var(--cyan);
+  color: var(--grain);
 }
 
 /* the card ---------------------------------------------------- */
@@ -129,8 +157,8 @@ body::after {
   border-radius: inherit;
   padding: 1px;
   background: linear-gradient(145deg,
-              rgba(199, 67, 87, .75), rgba(88, 169, 222, .55) 48%,
-              rgba(255, 255, 255, .06));
+              rgba(199, 67, 87, .8), rgba(216, 166, 87, .42) 45%,
+              rgba(79, 169, 107, .35) 72%, rgba(255, 244, 238, .06));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
@@ -167,7 +195,7 @@ input[type=email], input[type=text], textarea, select {
   font-family: var(--sans);
   font-size: 17px;              /* >=16px: stops iOS zoom-on-focus */
   color: var(--text);
-  background: rgba(3, 7, 12, .58);
+  background: rgba(8, 5, 4, .55);
   border: 1px solid var(--line);
   border-radius: 13px;
   outline: none;
@@ -184,9 +212,9 @@ select {
 input::placeholder, textarea::placeholder { color: var(--text-faint); }
 
 input:focus, textarea:focus, select:focus {
-  border-color: var(--cyan);
-  background: rgba(3, 7, 12, .78);
-  box-shadow: 0 0 0 3px rgba(88, 169, 222, .20), 0 0 26px -6px rgba(88, 169, 222, .55);
+  border-color: var(--sprout);
+  background: rgba(8, 5, 4, .8);
+  box-shadow: 0 0 0 3px rgba(79, 169, 107, .20), 0 0 26px -6px rgba(79, 169, 107, .5);
 }
 input[aria-invalid="true"], textarea[aria-invalid="true"] {
   border-color: var(--err);
@@ -194,7 +222,7 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] {
 }
 input:disabled {
   color: var(--text-dim);
-  background: rgba(3, 7, 12, .3);
+  background: rgba(8, 5, 4, .3);
   -webkit-text-fill-color: var(--text-dim);   /* iOS dims disabled text */
   opacity: 1;
 }
@@ -235,7 +263,7 @@ input:disabled {
   box-shadow: none;
   font-weight: 550;
 }
-.btn.ghost:hover:not(:disabled) { color: var(--text); border-color: var(--cyan); }
+.btn.ghost:hover:not(:disabled) { color: var(--text); border-color: var(--sprout); }
 .btn-row { display: flex; gap: 10px; margin-top: 4px; }
 .btn-row .btn { flex: 1; }
 
@@ -248,7 +276,7 @@ input:disabled {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-dim);
-  background: rgba(3, 7, 12, .5);
+  background: rgba(8, 5, 4, .5);
   border: 1px solid var(--line);
   border-radius: 13px;
   cursor: pointer;
@@ -257,9 +285,9 @@ input:disabled {
 }
 .choice button[aria-pressed="true"] {
   color: #fff;
-  border-color: var(--cyan);
-  background: linear-gradient(135deg, rgba(0,84,122,.85), rgba(88,169,222,.35));
-  box-shadow: 0 0 22px -6px rgba(88, 169, 222, .7);
+  border-color: var(--sprout);
+  background: linear-gradient(135deg, rgba(37, 94, 58, .9), rgba(79, 169, 107, .38));
+  box-shadow: 0 0 22px -6px rgba(79, 169, 107, .65);
 }
 
 /* spinner ----------------------------------------------------- */
@@ -280,7 +308,7 @@ input:disabled {
   font-weight: 700;
   letter-spacing: -.025em;
 }
-.result .who { color: var(--cyan); }
+.result .who { color: var(--sprout-lt); }
 .result p { margin: 0 0 6px; color: var(--text-dim); font-size: 15px; line-height: 1.55; }
 .result .stamp {
   font-family: var(--mono);
@@ -295,12 +323,21 @@ input:disabled {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.tick circle { stroke: url(#tickGrad); stroke-width: 3.5;
+.tick circle { stroke: url(#tickGrad); stroke-width: 3; opacity: .55;
                stroke-dasharray: 295; stroke-dashoffset: 295;
                animation: draw .62s cubic-bezier(.65,0,.35,1) forwards; }
-.tick path   { stroke: url(#tickGrad); stroke-width: 6;
-               stroke-dasharray: 60; stroke-dashoffset: 60;
-               animation: draw .38s cubic-bezier(.65,0,.35,1) .42s forwards; }
+/* the sprout: stem first, then each leaf unfurls */
+.tick .stem  { stroke: var(--sprout); stroke-width: 5;
+               stroke-dasharray: 46; stroke-dashoffset: 46;
+               animation: draw .45s cubic-bezier(.4,0,.3,1) .18s forwards; }
+.tick .leaf  { fill: var(--sprout); opacity: 0; transform-origin: 50px 56px;
+               animation: unfurl .42s cubic-bezier(.34,1.3,.5,1) forwards; }
+.tick .leaf-l { animation-delay: .52s; }
+.tick .leaf-r { animation-delay: .66s; }
+@keyframes unfurl {
+  from { opacity: 0; transform: scale(.25) rotate(-12deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0); }
+}
 @keyframes draw { to { stroke-dashoffset: 0; } }
 
 .badge {
@@ -312,9 +349,9 @@ input:disabled {
   font-size: 13.5px;
   font-weight: 600;
   border-radius: 999px;
-  background: rgba(88, 169, 222, .13);
-  border: 1px solid rgba(88, 169, 222, .35);
-  color: var(--cyan-soft);
+  background: rgba(79, 169, 107, .14);
+  border: 1px solid rgba(79, 169, 107, .36);
+  color: var(--sprout-lt);
 }
 .badge.muted {
   background: rgba(255,255,255,.05);
@@ -323,12 +360,18 @@ input:disabled {
 }
 
 .foot {
-  margin-top: 22px;
+  margin-top: 24px;
   text-align: center;
   font-size: 12px;
   color: var(--text-faint);
-  line-height: 1.6;
+  line-height: 1.7;
+  max-width: 460px;
 }
+.foot strong { color: var(--text-dim); font-weight: 600; }
+.foot .org  { font-size: 11px; opacity: .8; }
+.foot .help { display: inline-block; margin-top: 9px; color: var(--text-dim); }
+
+
 
 [hidden] { display: none !important; }
 
@@ -339,7 +382,8 @@ input:disabled {
     animation-iteration-count: 1 !important;
     transition-duration: .001ms !important;
   }
-  .tick circle, .tick path { stroke-dashoffset: 0; }
+  .tick circle, .tick .stem { stroke-dashoffset: 0; }
+  .tick .leaf { opacity: 1; transform: none; }
 }
 .sr-only {
   position: absolute; width: 1px; height: 1px;

@@ -68,6 +68,8 @@
 
   function renderSuccess(res) {
     $("ok-name").textContent = res.first_name ? `, ${res.first_name}` : "";
+    $("ok-stamp").textContent = "Checked in at " +
+      new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     const rec = receptionText(res.attending_reception);
     const badge = $("ok-badge");
     badge.hidden = !rec;
@@ -263,8 +265,9 @@
     $("email").focus();
   }
 
-  $("ok-next").addEventListener("click", reset);
-  $("dup-next").addEventListener("click", reset);
+  // No "check in someone else" on the success screens -- checking
+  // in is one person, one scan. Staff who need to check somebody
+  // in by hand do it from admin.html, not from here.
   $("fail-start").addEventListener("click", reset);
   $("fail-retry").addEventListener("click", () => {
     if (lastAction) { const a = lastAction; lastAction = null; a(); }

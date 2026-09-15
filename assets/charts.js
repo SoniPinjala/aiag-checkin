@@ -2,21 +2,25 @@
    Hand-built SVG charts. No library -- the whole admin page
    stays under ~40KB, which matters on venue wifi.
 
-   Palette: single-series marks use CYAN. When a chart carries
-   two series, the second is CARDINAL. That pair was validated
-   on this dark surface (#131A24):
-     lightness band PASS | chroma PASS | CVD deutan dE 18.2 PASS
+   Palette note -- this deliberately departs from the brand.
+   CADA's identity is cardinal + a seedling green, and the rest
+   of the app uses exactly that. But red and green are the
+   classic deutan confusion pair: measured on this surface they
+   separate by only dE 8.0, a WARN. Data has to be readable
+   before it is on-brand, so charts pair CARDINAL with a BLUE:
+     #C74357 + #4098D4 on the warm dark surface (#16110F)
+     lightness PASS | chroma PASS | CVD deutan dE 18.2 PASS
      | normal-vision dE 27.8 PASS | contrast PASS
-   Don't substitute the brighter UI cyan (#58A9DE) here -- it
-   sits outside the dark-mode lightness band (L 0.705 > 0.67).
+   Single-series charts use the blue alone. Do not "fix" this to
+   green for brand consistency without re-running the validator.
    ============================================================= */
 (() => {
   "use strict";
 
   const SERIES  = ["#4098D4", "#C74357"];
-  const INK     = "#9BA9BA";
-  const INK_DIM = "#64748B";
-  const GRID    = "rgba(255,255,255,.075)";
+  const INK     = "#B3A49C";
+  const INK_DIM = "#7C6E67";
+  const GRID    = "rgba(255,238,230,.075)";
 
   const esc = (s) => String(s).replace(/[&<>"]/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -115,7 +119,7 @@
         ${ticks.join("")}
         <line id="cross" x1="0" y1="${T}" x2="0" y2="${T + ih}" stroke="${SERIES[0]}"
               stroke-width="1" stroke-dasharray="3 3" opacity="0"/>
-        <circle id="dot" r="4.5" fill="${SERIES[0]}" stroke="#0A0E14" stroke-width="2" opacity="0"/>
+        <circle id="dot" r="4.5" fill="${SERIES[0]}" stroke="#100C0B" stroke-width="2" opacity="0"/>
         <rect x="${L}" y="${T}" width="${iw}" height="${ih}" fill="transparent" id="hit"/>
       </svg>`;
 

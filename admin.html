@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0A0E14">
+<meta name="theme-color" content="#100C0B">
 <meta name="robots" content="noindex, nofollow">
 <title>Staff Dashboard — AI in Agriculture Symposium</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,8 +16,10 @@
 
   .topbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; }
   .topbar h1 { font-size: 21px; margin: 0; flex: 1 1 auto; }
-  .topbar .kicker { font-family: var(--mono); font-size: 10.5px; letter-spacing:.18em;
-                    text-transform: uppercase; color: var(--cyan); display: block; margin-bottom: 3px; }
+  .topbar .kicker { font-family: var(--mono); font-size: 10.5px; letter-spacing:.16em;
+                    text-transform: uppercase; color: var(--grain); display: block; margin-bottom: 3px; }
+  .topbar .logo { height: 34px; width: auto; opacity: .9; margin-right: 4px; }
+  @media (max-width: 620px) { .topbar .logo { height: 28px; } }
   .topbar select { width: auto; min-width: 210px; min-height: 42px; font-size: 14.5px; padding: 8px 40px 8px 13px; }
   .topbar .btn  { width: auto; min-height: 42px; font-size: 14px; padding: 9px 16px; }
 
@@ -40,7 +42,7 @@
   .tile .v { font-size: 31px; font-weight: 700; letter-spacing: -.03em; line-height: 1;
              font-variant-numeric: tabular-nums; }
   .tile .d { font-size: 12px; color: var(--text-faint); margin-top: 6px; }
-  .tile.hero .v { color: var(--cyan); font-size: 37px; }
+  .tile.hero .v { color: var(--sprout-lt); font-size: 37px; }
 
   /* minmax(0,…) not 1fr: a bare 1fr track has an auto minimum and
      grows to fit a wide child, which would push the whole page
@@ -64,7 +66,7 @@
   }
   .tip { position: absolute; pointer-events: none; z-index: 5; opacity: 0;
          transition: opacity .12s; transform: translate(-50%, -115%);
-         background: #05090F; border: 1px solid var(--line); border-radius: 9px;
+         background: #0A0706; border: 1px solid var(--line); border-radius: 9px;
          padding: 7px 10px; font-size: 12.5px; white-space: nowrap;
          box-shadow: 0 10px 26px -8px #000; }
   .tip b { font-variant-numeric: tabular-nums; }
@@ -77,13 +79,13 @@
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
   th { text-align: left; font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase;
        color: var(--text-dim); font-weight: 600; padding: 0 10px 9px 0; }
-  td { padding: 9px 10px 9px 0; border-top: 1px solid rgba(255,255,255,.07); vertical-align: middle; }
+  td { padding: 9px 10px 9px 0; border-top: 1px solid rgba(255,238,230,.08); vertical-align: middle; }
   td .nm { font-weight: 600; }
   td .em { color: var(--text-faint); font-size: 12px; font-family: var(--mono); }
   .pill { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
-  .pill.in   { background: rgba(52,211,153,.14); color: var(--ok);     border: 1px solid rgba(52,211,153,.3); }
+  .pill.in   { background: rgba(79,169,107,.16); color: #7BC490;  border: 1px solid rgba(79,169,107,.34); }
   .pill.out  { background: rgba(255,255,255,.05); color: var(--text-dim); border: 1px solid var(--line); }
-  .pill.pre  { background: rgba(64,152,212,.14); color: #7FBBE6; border: 1px solid rgba(64,152,212,.3); }
+  .pill.pre  { background: rgba(64,152,212,.14); color: #8CC3E8; border: 1px solid rgba(64,152,212,.32); }
   .pill.walk { background: rgba(199,67,87,.15);  color: #E0788A; border: 1px solid rgba(199,67,87,.32); }
   .mini { width: auto; min-height: 36px; padding: 7px 13px; font-size: 13px; border-radius: 9px; }
   .tablewrap { overflow-x: auto; }
@@ -97,6 +99,8 @@
 <!-- ── login gate ────────────────────────────────────────── -->
 <div class="wrap" id="gate">
   <main class="card login">
+    <img src="assets/cada-logo.png" alt="Center for Agricultural Data Analytics"
+         style="height:40px;width:auto;max-width:100%;margin-bottom:18px;opacity:.95">
     <h1>Staff sign-in</h1>
     <p class="sub">Accounts are created by hand in Supabase. There is no self-signup.</p>
     <form id="login-form" novalidate>
@@ -118,6 +122,8 @@
 <div class="admin" id="dash" hidden>
 
   <div class="topbar">
+    <img class="logo" src="assets/cada-logo.png"
+         alt="Center for Agricultural Data Analytics">
     <div style="flex:1 1 auto">
       <span class="kicker">Staff Dashboard</span>
       <h1 id="ev-name">&nbsp;</h1>
@@ -173,6 +179,10 @@
   </section>
 
   <p class="foot" id="footnote"></p>
+  <p class="foot" style="margin-top:4px;opacity:.75">
+    Center for Agricultural Data Analytics &middot;
+    Arkansas Agricultural Experiment Station
+  </p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0A0E14">
+<meta name="theme-color" content="#100C0B">
 <meta name="robots" content="noindex, nofollow">
 <title>Check In — AI in Agriculture Symposium 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,7 +15,8 @@
 <div class="wrap">
 
   <div class="brand">
-    <img src="assets/cada-logo.png" alt="Center for Agricultural Data Analytics" onerror="this.style.display='none'">
+    <img src="assets/cada-logo.png"
+         alt="Center for Agricultural Data Analytics">
     <span class="kicker">Symposium 2026 &middot; Check-In</span>
   </div>
 
@@ -113,39 +114,39 @@
     <!-- ── STATE 3 ─ success ───────────────────────────────── -->
     <section id="s-success" hidden>
       <div class="result">
+        <!-- the seedling from the CADA logo, drawn as it grows -->
         <svg class="tick" viewBox="0 0 100 100" aria-hidden="true">
           <defs>
             <linearGradient id="tickGrad" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%"   stop-color="#C74357"/>
-              <stop offset="100%" stop-color="#58A9DE"/>
+              <stop offset="100%" stop-color="#4FA96B"/>
             </linearGradient>
           </defs>
           <circle cx="50" cy="50" r="47"/>
-          <path d="M28 51.5 L43.5 66 L72 35"/>
+          <path class="stem" d="M50 78 C50 68 50 58 50 40" fill="none"/>
+          <path class="leaf leaf-l" d="M50 62 C37 62 29 53 28 42 C39 42 48 50 50 62 Z"/>
+          <path class="leaf leaf-r" d="M50 56 C63 56 71 47 72 36 C61 36 52 44 50 56 Z"/>
         </svg>
         <h2>You&rsquo;re in<span class="who" id="ok-name"></span></h2>
         <p id="ok-msg">Enjoy the symposium.</p>
+        <p class="stamp" id="ok-stamp"></p>
         <div id="ok-badge" class="badge" hidden></div>
-      </div>
-      <div class="btn-row" style="margin-top:26px">
-        <button class="btn ghost" type="button" id="ok-next">Check in someone else</button>
       </div>
     </section>
 
     <!-- ── STATE 4 ─ already checked in ────────────────────── -->
     <section id="s-already" hidden>
       <div class="result">
-        <svg class="tick" viewBox="0 0 100 100" aria-hidden="true">
-          <circle cx="50" cy="50" r="47" style="stroke:#58A9DE;opacity:.45"/>
-          <path d="M28 51.5 L43.5 66 L72 35" style="stroke:#58A9DE;opacity:.45"/>
+        <svg class="tick" viewBox="0 0 100 100" aria-hidden="true" style="opacity:.6">
+          <circle cx="50" cy="50" r="47" style="stroke:#4FA96B;opacity:.4"/>
+          <path class="stem" d="M50 78 C50 68 50 58 50 40" fill="none"/>
+          <path class="leaf leaf-l" d="M50 62 C37 62 29 53 28 42 C39 42 48 50 50 62 Z"/>
+          <path class="leaf leaf-r" d="M50 56 C63 56 71 47 72 36 C61 36 52 44 50 56 Z"/>
         </svg>
         <h2>Already checked in<span class="who" id="dup-name"></span></h2>
         <p>You&rsquo;re all set &mdash; no need to do anything else.</p>
         <p class="stamp" id="dup-stamp"></p>
         <div id="dup-badge" class="badge muted" hidden></div>
-      </div>
-      <div class="btn-row" style="margin-top:26px">
-        <button class="btn ghost" type="button" id="dup-next">Check in someone else</button>
       </div>
     </section>
 
@@ -167,9 +168,18 @@
   </main>
 
   <p class="foot">
-    Sept 21, 2026 &middot; Don Tyson Center for Agricultural Sciences<br>
-    Trouble checking in? Find a staff member at the front desk.
+    Sept&nbsp;21, 2026 &middot; Don Tyson Center for Agricultural Sciences<br>
+    <span class="org">Hosted by the Center for Agricultural Data Analytics,
+      Arkansas Agricultural Experiment Station</span><br>
+    <span class="help">Trouble checking in? Find a staff member at the front desk.</span>
   </p>
+</div>
+
+<div class="rows" aria-hidden="true">
+  <i style="height:18%"></i><i style="height:31%"></i><i style="height:26%"></i>
+  <i style="height:44%"></i><i style="height:38%"></i><i style="height:58%"></i>
+  <i style="height:49%"></i><i style="height:72%"></i><i style="height:63%"></i>
+  <i style="height:88%"></i><i style="height:76%"></i><i style="height:100%"></i>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
