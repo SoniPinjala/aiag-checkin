@@ -17,13 +17,13 @@
 
   const $ = (id) => document.getElementById(id);
 
-  /* ---- event + token -------------------------------------- */
-  // The token is the shared secret baked into the QR. Remember
-  // it so a bookmarked visit still works on the day.
-  const params  = new URLSearchParams(location.search);
-  const eventId = params.get("e") || localStorage.getItem("aiag_event") || cfg.DEFAULT_EVENT;
-  const token   = params.get("k") || localStorage.getItem("aiag_token") || "";
-  if (params.get("e")) localStorage.setItem("aiag_event", eventId);
+  /* ---- token ----------------------------------------------- */
+  // The QR carries ONLY the token -- no event id. The database
+  // decides which symposium that means, so the printed sign is
+  // permanent: next year is one UPDATE, not a reprint.
+  // Remember it so a bookmarked visit still works on the day.
+  const params = new URLSearchParams(location.search);
+  const token  = params.get("k") || localStorage.getItem("aiag_token") || "";
   if (params.get("k")) localStorage.setItem("aiag_token", token);
 
   /* ---- state machine -------------------------------------- */
@@ -90,16 +90,17 @@
     show("s-already");
   }
 
-  // invalid_event means a bad or missing token -- a real
-  // possibility if someone types the URL by hand.
   function handleStatus(res, onNotRegistered) {
     switch (res && res.status) {
       case "checked_in":         renderSuccess(res); return true;
       case "already_checked_in": renderAlready(res); return true;
       case "not_registered":     onNotRegistered();  return true;
-      case "invalid_event":
-        fail(null, "This check-in link isn't valid. Please scan the QR code " +
-                   "on the poster, or ask a staff member for help.");
+      // One status covers both "wrong token" and "nothing running
+      // today" -- from the attendee's side those are the same
+      // situation, and the sign stays up all year.
+      case "no_active_event":
+        fail(null, "Check-in isn't open right now. If the symposium is " +
+                   "running today, please ask a staff member for help.");
         return true;
       default: return false;
     }
@@ -132,9 +133,7 @@
     const btn = $("email-btn");
     busy(btn, true);
     try {
-      const res = await rpc("checkin_lookup", {
-        p_event: eventId, p_token: token, p_email: email
-      });
+      const res = await rpc("checkin_lookup", { p_token: token, p_email: email });
       const handled = handleStatus(res, () => {
         $("r-email").value = email;
         $("reg-err").textContent = "";
@@ -206,7 +205,6 @@
     const heard = heardSel === "__other" ? $("r-heard-other").value.trim() : heardSel;
 
     doRegister({
-      p_event: eventId,
       p_token: token,
       p_email: pendingEmail,
       p_first_name: first,

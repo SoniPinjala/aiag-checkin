@@ -5,12 +5,14 @@
      npm install                 # one-time, installs `qrcode`
      node tools/make-qr.mjs
 
-   Writes qr-<event>.svg (vector -- scales to any poster size)
-   and qr-<event>.png. Reads SITE_URL / EVENT_ID / CHECKIN_TOKEN
-   from .env so the token never gets typed by hand.
+   Writes qr-checkin.svg (vector -- scales to any poster size)
+   and qr-checkin.png. Reads SITE_URL / CHECKIN_TOKEN from .env
+   so the token never gets typed by hand.
 
-   The URL this bakes in is PERMANENT once printed. Check it
-   twice, and scan the generated file with a real phone before
+   This QR is designed to be PERMANENT: it carries no year, so
+   the same printed sign works every symposium. Rotating the
+   token means reprinting, so treat the generated files as
+   long-lived artifacts and scan one with a real phone before
    sending anything to a printer.
    ============================================================= */
 
@@ -27,7 +29,6 @@ try {
 } catch { /* fall back to real env vars */ }
 
 const SITE  = (env.SITE_URL || "https://SoniPinjala.github.io/aiag-checkin/").replace(/\/?$/, "/");
-const EVENT = env.EVENT_ID || "aiag2026";
 const TOKEN = env.CHECKIN_TOKEN;
 
 if (!TOKEN || TOKEN === "CHANGE_ME_BEFORE_PRINTING") {
@@ -37,16 +38,18 @@ if (!TOKEN || TOKEN === "CHANGE_ME_BEFORE_PRINTING") {
   exit(1);
 }
 
-const url = `${SITE}?e=${encodeURIComponent(EVENT)}&k=${encodeURIComponent(TOKEN)}`;
+// No event id in the URL -- the database resolves which
+// symposium is active. That is what makes this QR permanent.
+const url = `${SITE}?k=${encodeURIComponent(TOKEN)}`;
 
 // High error correction: posters get scuffed, and people scan
 // them at an angle from six feet away.
 const opts = { errorCorrectionLevel: "H", margin: 2, width: 1400,
                color: { dark: "#0A0E14", light: "#FFFFFF" } };
 
-writeFileSync(`qr-${EVENT}.svg`, await QRCode.toString(url, { ...opts, type: "svg" }));
-await QRCode.toFile(`qr-${EVENT}.png`, url, opts);
+writeFileSync(`qr-checkin.svg`, await QRCode.toString(url, { ...opts, type: "svg" }));
+await QRCode.toFile(`qr-checkin.png`, url, opts);
 
-console.log(`\n  ✓ qr-${EVENT}.svg and qr-${EVENT}.png`);
+console.log(`\n  ✓ qr-checkin.svg and qr-checkin.png`);
 console.log(`\n  encodes: ${url}\n`);
 console.log("  Scan it with a real phone before it goes to print.\n");

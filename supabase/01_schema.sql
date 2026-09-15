@@ -13,9 +13,24 @@ create table if not exists public.events (
   id             text primary key,               -- 'aiag2026'
   name           text not null,
   event_date     date not null,                  -- drives the admin year picker
-  checkin_token  text not null,                  -- shared secret carried in the QR
   active         boolean not null default true,
   created_at     timestamptz not null default now()
+);
+
+-- Exactly one event may be active at a time. The QR carries no
+-- year, so "the active event" has to be unambiguous -- otherwise
+-- check-ins land in whichever row the planner reached first.
+create unique index if not exists events_one_active
+  on public.events ((active)) where active;
+
+-- -------------------------------------------------------------
+-- app_settings: exactly one row (boolean PK + CHECK is the
+-- standard trick). The check-in token lives here rather than on
+-- the event, so the printed QR never has to change.
+-- -------------------------------------------------------------
+create table if not exists public.app_settings (
+  id            boolean primary key default true check (id),
+  checkin_token text not null
 );
 
 -- -------------------------------------------------------------
@@ -58,13 +73,16 @@ create index if not exists attendees_event_name_idx
   on public.attendees (event_id, last_name, first_name);
 
 -- -------------------------------------------------------------
--- Seed the 2026 event.
--- IMPORTANT: replace the token below with your own secret before
--- generating the QR code (tools/make-qr.mjs reads it from .env).
+-- Seed the event and the permanent token.
+-- IMPORTANT: replace the token below before generating the QR
+-- (tools/make-qr.mjs reads the same value from .env). Because
+-- the QR is meant to be permanent, changing it later means
+-- reprinting -- so set it once, here, and leave it alone.
 -- -------------------------------------------------------------
-insert into public.events (id, name, event_date, checkin_token)
-values ('aiag2026',
-        '2026 Arkansas AI in Agriculture Symposium',
-        '2026-09-21',
-        'CHANGE_ME_BEFORE_PRINTING')
+insert into public.events (id, name, event_date)
+values ('aiag2026', '2026 Arkansas AI in Agriculture Symposium', '2026-09-21')
+on conflict (id) do nothing;
+
+insert into public.app_settings (id, checkin_token)
+values (true, 'CHANGE_ME_BEFORE_PRINTING')
 on conflict (id) do nothing;

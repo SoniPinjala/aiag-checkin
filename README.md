@@ -84,10 +84,14 @@ RLS policy. If it ever lands in a commit, rotate it in the dashboard.
 npm run qr
 ```
 
-Writes `qr-aiag2026.svg` (vector, for print) and `.png`.
+Writes `qr-checkin.svg` (vector, for print) and `.png`.
 
-> **The URL is permanent once printed.** Scan the generated file with a real
-> phone and complete a check-in before anything goes to a printer.
+**This QR is permanent.** It encodes only the token — no year — so the database
+decides which symposium it means. The same printed sign works every year; see
+*Next year* below.
+
+> Scan the generated file with a real phone and complete a check-in before
+> anything goes to a printer. Rotating the token now means reprinting.
 
 ---
 
@@ -137,16 +141,27 @@ later. The admin page is also the fix for typo'd emails and dead phones.
 
 ## Next year
 
-No migration and no re-setup — just:
+The printed QR does not change. Two statements:
 
 ```sql
-insert into events (id, name, event_date, checkin_token)
-values ('aiag2027', '2027 Arkansas AI in Agriculture Symposium',
-        '2027-09-20', 'A_FRESH_TOKEN');
+insert into events (id, name, event_date, active)
+values ('aiag2027', '2027 Arkansas AI in Agriculture Symposium', '2027-09-20', false);
+
+begin;
+  update events set active = false where active;
+  update events set active = true  where id = 'aiag2027';
+commit;
 ```
 
-Update `.env`, run `npm run qr`, import the new list. 2026's data stays put
-and the dashboard's year picker gains an entry.
+The second block must be one transaction: a unique index enforces exactly one
+active event, so deactivating and activating have to land together.
+
+Then set `EVENT_ID=aiag2027` in `.env` (the importer uses it; the QR does not)
+and import the new list. 2026's data stays put and the dashboard's year picker
+gains an entry.
+
+Between symposiums you can leave every event inactive — a scan then says
+"check-in isn't open right now" rather than filing someone under the wrong year.
 
 ---
 

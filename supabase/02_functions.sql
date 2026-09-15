@@ -7,28 +7,31 @@
 -- These return a status and a first name -- never a list.
 -- =============================================================
 
--- Validates the shared secret carried in the QR URL.
-create or replace function public._event_ok(p_event text, p_token text)
-returns boolean
+-- Resolve the QR token to whichever event is currently active.
+-- Returns NULL for a wrong token OR when nothing is running,
+-- which is the normal state for the 51 weeks between symposiums.
+create or replace function public._active_event(p_token text)
+returns text
 language sql
 security definer
 set search_path = public, pg_temp
 stable
 as $$
-  select exists (
-    select 1 from public.events
-     where id = p_event and active and checkin_token = p_token
-  );
+  select e.id
+    from public.events e
+   cross join public.app_settings s
+   where e.active
+     and s.checkin_token = p_token
+   limit 1;
 $$;
 
 -- -------------------------------------------------------------
 -- checkin_lookup: matches on EMAIL ALONE and records the
 -- check-in in the same round trip (venue wifi is slow; one call).
 --   checked_in | already_checked_in | not_registered
---   | invalid_email | invalid_event
+--   | invalid_email | no_active_event
 -- -------------------------------------------------------------
 create or replace function public.checkin_lookup(
-  p_event text,
   p_token text,
   p_email text
 ) returns jsonb
@@ -37,11 +40,13 @@ security definer
 set search_path = public, pg_temp
 as $$
 declare
+  v_event text;
   v_email text;
   v_rec   public.attendees%rowtype;
 begin
-  if not public._event_ok(p_event, p_token) then
-    return jsonb_build_object('status', 'invalid_event');
+  v_event := public._active_event(p_token);
+  if v_event is null then
+    return jsonb_build_object('status', 'no_active_event');
   end if;
 
   v_email := lower(trim(coalesce(p_email, '')));
@@ -49,10 +54,9 @@ begin
     return jsonb_build_object('status', 'invalid_email');
   end if;
 
-  -- lock the row so two simultaneous scans can't both "win"
   select * into v_rec
     from public.attendees
-   where event_id = p_event and email = v_email
+   where event_id = v_event and email = v_email
    for update;
 
   if not found then
@@ -61,35 +65,26 @@ begin
 
   if v_rec.checked_in_at is not null then
     return jsonb_build_object(
-      'status',              'already_checked_in',
-      'first_name',          v_rec.first_name,
-      'checked_in_at',       v_rec.checked_in_at,
-      'attending_reception', v_rec.attending_reception
-    );
+      'status', 'already_checked_in', 'first_name', v_rec.first_name,
+      'checked_in_at', v_rec.checked_in_at,
+      'attending_reception', v_rec.attending_reception);
   end if;
 
   update public.attendees
-     set checked_in_at  = now(),
-         checkin_method = 'self'
+     set checked_in_at = now(), checkin_method = 'self'
    where id = v_rec.id;
 
   return jsonb_build_object(
-    'status',              'checked_in',
-    'first_name',          v_rec.first_name,
-    'attending_reception', v_rec.attending_reception
-  );
+    'status', 'checked_in', 'first_name', v_rec.first_name,
+    'attending_reception', v_rec.attending_reception);
 end;
 $$;
 
 -- -------------------------------------------------------------
 -- register_and_checkin: walk-up path. Requires email + both
 -- names; everything else is optional so the desk never stalls.
--- Insert and check-in are one statement; a double-tapped submit
--- or a mid-import collision returns already_checked_in, never
--- a duplicate row and never an error the attendee has to read.
 -- -------------------------------------------------------------
 create or replace function public.register_and_checkin(
-  p_event                text,
   p_token                text,
   p_email                text,
   p_first_name           text,
@@ -106,16 +101,17 @@ security definer
 set search_path = public, pg_temp
 as $$
 declare
+  v_event text;
   v_email text;
   v_first text;
   v_last  text;
   v_rec   public.attendees%rowtype;
 begin
-  if not public._event_ok(p_event, p_token) then
-    return jsonb_build_object('status', 'invalid_event');
+  v_event := public._active_event(p_token);
+  if v_event is null then
+    return jsonb_build_object('status', 'no_active_event');
   end if;
 
-  -- never trust the client's validation; redo it here
   v_email := lower(trim(coalesce(p_email, '')));
   v_first := trim(coalesce(p_first_name, ''));
   v_last  := trim(coalesce(p_last_name, ''));
@@ -133,7 +129,7 @@ begin
     attending_reception, dietary_restrictions, heard_from,
     source, checked_in_at, checkin_method
   ) values (
-    p_event, v_email, v_first, v_last,
+    v_event, v_email, v_first, v_last,
     nullif(trim(coalesce(p_job_title, '')), ''),
     nullif(trim(coalesce(p_organization, '')), ''),
     nullif(trim(coalesce(p_academic_background, '')), ''),
@@ -146,36 +142,30 @@ begin
   returning * into v_rec;
 
   if found then
-    return jsonb_build_object(
-      'status', 'checked_in', 'first_name', v_rec.first_name,
-      'attending_reception', v_rec.attending_reception
-    );
+    return jsonb_build_object('status', 'checked_in',
+      'first_name', v_rec.first_name,
+      'attending_reception', v_rec.attending_reception);
   end if;
 
-  -- conflict: this email already existed (pre-registered, or a
-  -- double submit). Treat it exactly like a normal check-in.
   select * into v_rec
     from public.attendees
-   where event_id = p_event and email = v_email
+   where event_id = v_event and email = v_email
    for update;
 
   if v_rec.checked_in_at is not null then
     return jsonb_build_object(
-      'status',              'already_checked_in',
-      'first_name',          v_rec.first_name,
-      'checked_in_at',       v_rec.checked_in_at,
-      'attending_reception', v_rec.attending_reception
-    );
+      'status', 'already_checked_in', 'first_name', v_rec.first_name,
+      'checked_in_at', v_rec.checked_in_at,
+      'attending_reception', v_rec.attending_reception);
   end if;
 
   update public.attendees
      set checked_in_at = now(), checkin_method = 'self'
    where id = v_rec.id;
 
-  return jsonb_build_object(
-    'status', 'checked_in', 'first_name', v_rec.first_name,
-    'attending_reception', v_rec.attending_reception
-  );
+  return jsonb_build_object('status', 'checked_in',
+    'first_name', v_rec.first_name,
+    'attending_reception', v_rec.attending_reception);
 end;
 $$;
 

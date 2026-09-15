@@ -15,10 +15,6 @@ window.CONFIG = {
   SUPABASE_URL: "https://oxycvbysjvkjhikxqmyk.supabase.co",
   SUPABASE_ANON_KEY: "sb_publishable_8rmMWmquFAF-bk8hHYqu4g_Ren6tw9k",
 
-  // fallback when the URL has no ?e= (i.e. someone typed the
-  // address instead of scanning the poster)
-  DEFAULT_EVENT: "aiag2026",
-
   // how long to wait on venue wifi before offering Retry
   TIMEOUT_MS: 12000
 };

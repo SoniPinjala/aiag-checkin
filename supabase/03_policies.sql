@@ -8,7 +8,8 @@
 -- own email, and register itself.
 -- =============================================================
 
-alter table public.events    enable row level security;
+alter table public.events       enable row level security;
+alter table public.app_settings enable row level security;
 alter table public.attendees enable row level security;
 
 -- -------------------------------------------------------------
@@ -16,8 +17,12 @@ alter table public.attendees enable row level security;
 --    With RLS on and zero policies for anon, these are already
 --    inert -- the revokes are belt and braces.
 -- -------------------------------------------------------------
-revoke all on public.attendees from anon;
-revoke all on public.events    from anon;
+revoke all on public.attendees    from anon;
+revoke all on public.events       from anon;
+-- app_settings holds the check-in token; only the SECURITY
+-- DEFINER functions may ever read it.
+revoke all on public.app_settings from anon, authenticated;
+grant  all on public.app_settings to service_role;
 revoke all on public.attendees from authenticated;
 revoke all on public.events    from authenticated;
 
@@ -66,19 +71,19 @@ grant all on public.events    to service_role;
 -- 3. Functions. Postgres grants EXECUTE to PUBLIC by default,
 --    so every one of these must be revoked before granting.
 -- -------------------------------------------------------------
-revoke all on function public._event_ok(text, text)            from public;
-revoke all on function public.checkin_lookup(text, text, text) from public;
+revoke all on function public._active_event(text)              from public;
+revoke all on function public.checkin_lookup(text, text)       from public;
 revoke all on function public.keepalive()                      from public;
 revoke all on function public.event_stats(text)                from public;
 revoke all on function public.staff_checkin(uuid)              from public;
 revoke all on function public.register_and_checkin(
-  text, text, text, text, text, text, text, text, boolean, text, text
+  text, text, text, text, text, text, text, boolean, text, text
 ) from public;
 
 -- the attendee page: exactly these three, nothing else
-grant execute on function public.checkin_lookup(text, text, text) to anon;
+grant execute on function public.checkin_lookup(text, text) to anon;
 grant execute on function public.register_and_checkin(
-  text, text, text, text, text, text, text, text, boolean, text, text
+  text, text, text, text, text, text, text, boolean, text, text
 ) to anon;
 grant execute on function public.keepalive() to anon;
 
@@ -86,8 +91,9 @@ grant execute on function public.keepalive() to anon;
 grant execute on function public.event_stats(text)   to authenticated;
 grant execute on function public.staff_checkin(uuid) to authenticated;
 
--- _event_ok stays internal: it is called by the SECURITY DEFINER
--- functions above, which run as owner, so nobody needs EXECUTE.
+-- _active_event stays internal: it is called by the SECURITY
+-- DEFINER functions above, which run as owner, so nobody needs
+-- EXECUTE on it directly.
 
 -- -------------------------------------------------------------
 -- 4. Verify. After running this, from a terminal:
