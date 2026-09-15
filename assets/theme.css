@@ -188,7 +188,13 @@ label .req { color: var(--cardinal-lt); margin-left: 3px; }
 
 .field { margin-bottom: 16px; }
 
-input[type=email], input[type=text], textarea, select {
+/* Deny-list, not an allow-list. An enumerated list of types is
+   how the password field ended up unstyled: it silently misses
+   anything not thought of at the time. This covers every
+   text-like input, now and later, and excludes only the ones
+   that genuinely must not look like a text box. */
+input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=color]):not([type=submit]):not([type=button]):not([type=reset]):not([type=image]):not([type=hidden]),
+textarea, select {
   width: 100%;
   min-height: var(--tap);
   padding: 14px 16px;
@@ -204,7 +210,7 @@ input[type=email], input[type=text], textarea, select {
 textarea { min-height: 92px; resize: vertical; line-height: 1.5; }
 select {
   appearance: none;
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%239BA9BA' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23B3A49C' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 16px center;
   padding-right: 42px;
@@ -218,7 +224,7 @@ input:focus, textarea:focus, select:focus {
 }
 input[aria-invalid="true"], textarea[aria-invalid="true"] {
   border-color: var(--err);
-  box-shadow: 0 0 0 3px rgba(248, 113, 113, .16);
+  box-shadow: 0 0 0 3px rgba(232, 105, 122, .17);
 }
 input:disabled {
   color: var(--text-dim);
