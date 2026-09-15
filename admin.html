@@ -90,6 +90,29 @@
   .mini { width: auto; min-height: 36px; padding: 7px 13px; font-size: 13px; border-radius: 9px; }
   .tablewrap { overflow-x: auto; }
 
+  /* On a phone a 5-column roster squeezes rather than scrolls,
+     and the "Check in" button is what gets clipped -- which is
+     the one thing floor staff actually need. Below 620px each
+     person becomes a card with a full-width action instead. */
+  @media (max-width: 620px) {
+    #roster thead { display: none; }
+    #roster, #roster tbody { display: block; }
+    #roster tr {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      border: 1px solid var(--line); border-radius: 13px;
+      padding: 13px 14px; margin-bottom: 10px;
+    }
+    #roster td { display: block; border: 0; padding: 0; }
+    #roster td:nth-child(1) { flex: 1 1 100%; }          /* name + email */
+    #roster td:nth-child(2) { flex: 1 1 100%;            /* organization */
+                              color: var(--text-dim); font-size: 12.5px; }
+    #roster td:nth-child(3),
+    #roster td:nth-child(4) { flex: 0 0 auto; }          /* the two pills */
+    #roster td:nth-child(5) { flex: 1 1 100%; text-align: left !important; }
+    #roster td:nth-child(5):empty { display: none; }
+    #roster td:nth-child(5) .btn { width: 100%; min-height: 46px; }
+  }
+
   .stale { color: var(--warn); }
   .login { max-width: 400px; margin: 9vh auto 0; }
 </style>
