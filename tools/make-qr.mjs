@@ -38,18 +38,25 @@ if (!TOKEN || TOKEN === "CHANGE_ME_BEFORE_PRINTING") {
   exit(1);
 }
 
-// No event id in the URL -- the database resolves which
-// symposium is active. That is what makes this QR permanent.
-const url = `${SITE}?k=${encodeURIComponent(TOKEN)}`;
+// One QR per SERIES. No year in the URL -- the database resolves
+// which hackathon or symposium is currently active -- so each of
+// these signs is permanent and reusable every year.
+const SERIES = [
+  ["hackathon", "AI in Ag Hackathon"],
+  ["symposium", "AI in Agriculture Symposium"]
+];
 
 // High error correction: posters get scuffed, and people scan
 // them at an angle from six feet away.
 const opts = { errorCorrectionLevel: "H", margin: 2, width: 1400,
                color: { dark: "#0A0E14", light: "#FFFFFF" } };
 
-writeFileSync(`qr-checkin.svg`, await QRCode.toString(url, { ...opts, type: "svg" }));
-await QRCode.toFile(`qr-checkin.png`, url, opts);
-
-console.log(`\n  ✓ qr-checkin.svg and qr-checkin.png`);
-console.log(`\n  encodes: ${url}\n`);
-console.log("  Scan it with a real phone before it goes to print.\n");
+for (const [series, label] of SERIES) {
+  const url = `${SITE}?k=${encodeURIComponent(TOKEN)}&s=${series}`;
+  writeFileSync(`qr-${series}.svg`, await QRCode.toString(url, { ...opts, type: "svg" }));
+  await QRCode.toFile(`qr-${series}.png`, url, opts);
+  console.log(`\n  ✓ qr-${series}.svg / .png   — ${label}`);
+  console.log(`    ${url}`);
+}
+console.log("\n  These two are NOT interchangeable. Label the printouts, and");
+console.log("  scan each with a real phone before either goes to a printer.\n");

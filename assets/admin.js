@@ -46,16 +46,20 @@
     $("dash").hidden = false;
 
     const { data: events, error } = await db
-      .from("events").select("id,name,event_date").order("event_date", { ascending: false });
+      .from("events").select("id,name,event_date,series").order("event_date", { ascending: false });
 
     if (error || !events || !events.length) {
       $("ev-name").textContent = "No events found";
       return;
     }
 
-    $("ev-pick").innerHTML = events.map((e) =>
-      `<option value="${esc(e.id)}">${new Date(e.event_date + "T00:00:00")
-        .getFullYear()} — ${esc(e.name)}</option>`).join("");
+    // Two events share 2026, so the year alone no longer
+    // identifies one. Name + date does.
+    $("ev-pick").innerHTML = events.map((e) => {
+      const d = new Date(e.event_date + "T00:00:00");
+      const when = d.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+      return `<option value="${esc(e.id)}">${esc(e.name)} — ${when}</option>`;
+    }).join("");
 
     eventId = events[0].id;
     $("ev-pick").value = eventId;

@@ -12,16 +12,20 @@ create extension if not exists pgcrypto;
 create table if not exists public.events (
   id             text primary key,               -- 'aiag2026'
   name           text not null,
-  event_date     date not null,                  -- drives the admin year picker
+  event_date     date not null,                  -- drives the admin picker
+  series         text not null
+                 check (series in ('hackathon', 'symposium')),
   active         boolean not null default true,
   created_at     timestamptz not null default now()
 );
 
--- Exactly one event may be active at a time. The QR carries no
--- year, so "the active event" has to be unambiguous -- otherwise
--- check-ins land in whichever row the planner reached first.
-create unique index if not exists events_one_active
-  on public.events ((active)) where active;
+-- One active event PER SERIES. The hackathon (Sept 18-20) and the
+-- symposium (Sept 21) overlap in the calendar, so a single global
+-- "active event" would force someone to flip a switch mid-week --
+-- and a missed flip files arrivals into the wrong event with a
+-- cheerful "you're in". The QR names its series instead.
+create unique index if not exists events_one_active_per_series
+  on public.events (series) where active;
 
 -- -------------------------------------------------------------
 -- app_settings: exactly one row (boolean PK + CHECK is the
@@ -46,14 +50,25 @@ create table if not exists public.attendees (
   email                   text not null check (position('@' in email) > 1
                                                and length(trim(email)) > 2),
   first_name              text not null check (length(trim(first_name)) > 0),
-  last_name               text not null check (length(trim(last_name))  > 0),
+  -- nullable: the hackathon form collects ONE "Your Name" field,
+  -- and a mononym has no surname to split off. Better absent than
+  -- invented. The walk-up form still requires both -- at a desk
+  -- you can simply ask.
+  last_name               text,
 
-  -- from the MS Form, all optional
+  -- symposium form
   job_title               text,
   organization            text,
   academic_background     text,
   lightning_talk_abstract text,
   attending_reception     boolean,
+
+  -- hackathon form
+  college                 text,
+  program                 text,
+  background              text,
+
+  -- both forms
   dietary_restrictions    text,
   heard_from              text,
 
@@ -67,6 +82,27 @@ create table if not exists public.attendees (
   unique (event_id, email)
 );
 
+-- Email is the identity key, so normalization belongs to the
+-- TABLE, not to whichever code path happens to do the writing.
+-- Without this, a direct insert (table editor, manual fix, a
+-- future script) can store "A@B.com" and that person then fails
+-- to match their own check-in scan.
+create or replace function public.normalize_attendee_email()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  new.email := lower(trim(new.email));
+  return new;
+end;
+$$;
+
+drop trigger if exists attendees_normalize_email on public.attendees;
+create trigger attendees_normalize_email
+  before insert or update of email on public.attendees
+  for each row execute function public.normalize_attendee_email();
+
 create index if not exists attendees_event_checkin_idx
   on public.attendees (event_id, checked_in_at);
 create index if not exists attendees_event_name_idx
@@ -79,8 +115,9 @@ create index if not exists attendees_event_name_idx
 -- the QR is meant to be permanent, changing it later means
 -- reprinting -- so set it once, here, and leave it alone.
 -- -------------------------------------------------------------
-insert into public.events (id, name, event_date)
-values ('aiag2026', '2026 Arkansas AI in Agriculture Symposium', '2026-09-21')
+insert into public.events (id, name, event_date, series) values
+  ('aiag-hack2026', '2026 AI in Ag Hackathon',                   '2026-09-18', 'hackathon'),
+  ('aiag2026',      '2026 Arkansas AI in Agriculture Symposium', '2026-09-21', 'symposium')
 on conflict (id) do nothing;
 
 insert into public.app_settings (id, checkin_token)

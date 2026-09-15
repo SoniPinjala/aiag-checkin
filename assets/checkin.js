@@ -23,8 +23,17 @@
   // permanent: next year is one UPDATE, not a reprint.
   // Remember it so a bookmarked visit still works on the day.
   const params = new URLSearchParams(location.search);
-  const token  = params.get("k") || localStorage.getItem("aiag_token") || "";
+  const token  = params.get("k") || localStorage.getItem("aiag_token")  || "";
+  const series = params.get("s") || localStorage.getItem("aiag_series") || "";
   if (params.get("k")) localStorage.setItem("aiag_token", token);
+  if (params.get("s")) localStorage.setItem("aiag_series", series);
+
+  // Two events run three days apart -- the hackathon (18-20) and
+  // the symposium (21) -- so the QR says WHICH. Without it we
+  // would be guessing, and guessing wrong files someone into the
+  // wrong event with a cheerful "you're in".
+  const EVENT_LABEL = { hackathon: "AI in Ag Hackathon",
+                        symposium: "AI in Agriculture Symposium" }[series] || "";
 
   /* ---- state machine -------------------------------------- */
   const STATES = ["s-email", "s-register", "s-success", "s-already", "s-error"];
@@ -133,7 +142,8 @@
     const btn = $("email-btn");
     busy(btn, true);
     try {
-      const res = await rpc("checkin_lookup", { p_token: token, p_email: email });
+      const res = await rpc("checkin_lookup",
+        { p_token: token, p_series: series, p_email: email });
       const handled = handleStatus(res, () => {
         $("r-email").value = email;
         $("reg-err").textContent = "";
@@ -206,6 +216,7 @@
 
     doRegister({
       p_token: token,
+      p_series: series,
       p_email: pendingEmail,
       p_first_name: first,
       p_last_name: last,
@@ -273,10 +284,17 @@
   });
 
   /* ---- boot ------------------------------------------------ */
-  if (!token) {
+  if (!token || !series) {
     fail(null, "This page needs the link from the QR code on the poster. " +
                "Please scan it, or ask a staff member for help.");
   } else {
+    // Name the event on screen. Two check-in desks three days
+    // apart look identical otherwise, and someone at the wrong
+    // one should be able to tell at a glance.
+    if (EVENT_LABEL) {
+      const k = document.querySelector(".brand .kicker");
+      if (k) k.textContent = EVENT_LABEL + " \u00b7 Check-In";
+    }
     $("email").focus();
   }
 })();

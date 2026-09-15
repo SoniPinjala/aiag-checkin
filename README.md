@@ -1,7 +1,16 @@
 # AI in Agriculture Symposium — Check-In
 
-QR check-in and analytics for the Arkansas AI in Agriculture Symposium.
+QR check-in and analytics for the Arkansas AI in Agriculture events.
 Static site on GitHub Pages, Postgres on Supabase, $0/month.
+
+| Event | Dates | Who |
+|---|---|---|
+| AI in Ag Hackathon | Sept 18–20, 2026 | 60 grad students |
+| AI in Agriculture Symposium | Sept 21, 2026 | open registration |
+
+**One QR per event — they are not interchangeable.** Each carries its *series*
+(`hackathon` / `symposium`), and the database resolves which event that means,
+so both signs stay valid every year with nothing to flip mid-week.
 
 **Attendee flow:** scan the QR → enter email → if we know that email you're
 checked in; if not, a short form registers and checks you in, tagged as a
@@ -84,11 +93,13 @@ RLS policy. If it ever lands in a commit, rotate it in the dashboard.
 npm run qr
 ```
 
-Writes `qr-checkin.svg` (vector, for print) and `.png`.
+Writes four files: `qr-hackathon.svg`/`.png` and `qr-symposium.svg`/`.png`.
 
-**This QR is permanent.** It encodes only the token — no year — so the database
-decides which symposium it means. The same printed sign works every year; see
-*Next year* below.
+**Label the printouts.** The two codes look identical and are not
+interchangeable — the hackathon sign checks people into the hackathon only.
+
+**Both are permanent.** Neither encodes a year, so the same signs work every
+year; see *Next year* below.
 
 > Scan the generated file with a real phone and complete a check-in before
 > anything goes to a printer. Rotating the token now means reprinting.
@@ -103,6 +114,17 @@ Microsoft Forms exports `.xlsx` — open it and **File → Save As → CSV UTF-8
 node tools/import-prereg.mjs responses.csv           # dry run, writes nothing
 node tools/import-prereg.mjs responses.csv --commit  # apply
 ```
+
+**The form is detected from the header**, and that picks the event it imports
+into — `First Name` means symposium, `Your Name` means hackathon. You don't
+pass a flag, because passing the wrong one would mis-map every column. Override
+with `--event=<id>` only if you really need to.
+
+The hackathon form collects a single `Your Name` field, so the importer splits
+it on the last space and **prints every split for review**. That rule is wrong
+for names like *Maria Elena Vargas Ruiz*, where both final words are surnames —
+read the list in the dry run and fix any it got wrong afterwards. A mononym
+keeps a NULL surname rather than an invented one.
 
 Dry run is the default. It prints what would change, and lists every row it
 would skip and why.
@@ -141,27 +163,29 @@ later. The admin page is also the fix for typo'd emails and dead phones.
 
 ## Next year
 
-The printed QR does not change. Two statements:
+The printed QRs do not change. For each series, add the new event and hand over
+the active flag in one transaction:
 
 ```sql
-insert into events (id, name, event_date, active)
-values ('aiag2027', '2027 Arkansas AI in Agriculture Symposium', '2027-09-20', false);
+insert into events (id, name, event_date, series, active) values
+  ('aiag-hack2027', '2027 AI in Ag Hackathon',                   '2027-09-17', 'hackathon', false),
+  ('aiag2027',      '2027 Arkansas AI in Agriculture Symposium', '2027-09-20', 'symposium', false);
 
 begin;
-  update events set active = false where active;
+  update events set active = false where series = 'symposium' and active;
   update events set active = true  where id = 'aiag2027';
 commit;
 ```
 
-The second block must be one transaction: a unique index enforces exactly one
-active event, so deactivating and activating have to land together.
+Each block must be one transaction: a unique index enforces one active event
+per series, so deactivating and activating have to land together.
 
-Then set `EVENT_ID=aiag2027` in `.env` (the importer uses it; the QR does not)
-and import the new list. 2026's data stays put and the dashboard's year picker
-gains an entry.
+Then update the `event` ids in `tools/import-prereg.mjs` and import the new
+lists. Earlier years stay put and the dashboard's picker gains entries.
 
-Between symposiums you can leave every event inactive — a scan then says
-"check-in isn't open right now" rather than filing someone under the wrong year.
+Between events you can leave a series with nothing active — a scan then says
+"check-in isn't open right now" rather than filing someone under the wrong
+event.
 
 ---
 

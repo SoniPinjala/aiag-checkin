@@ -10,7 +10,7 @@
 -- Resolve the QR token to whichever event is currently active.
 -- Returns NULL for a wrong token OR when nothing is running,
 -- which is the normal state for the 51 weeks between symposiums.
-create or replace function public._active_event(p_token text)
+create or replace function public._active_event(p_token text, p_series text)
 returns text
 language sql
 security definer
@@ -21,6 +21,7 @@ as $$
     from public.events e
    cross join public.app_settings s
    where e.active
+     and e.series = p_series
      and s.checkin_token = p_token
    limit 1;
 $$;
@@ -32,8 +33,9 @@ $$;
 --   | invalid_email | no_active_event
 -- -------------------------------------------------------------
 create or replace function public.checkin_lookup(
-  p_token text,
-  p_email text
+  p_token  text,
+  p_series text,
+  p_email  text
 ) returns jsonb
 language plpgsql
 security definer
@@ -44,7 +46,7 @@ declare
   v_email text;
   v_rec   public.attendees%rowtype;
 begin
-  v_event := public._active_event(p_token);
+  v_event := public._active_event(p_token, p_series);
   if v_event is null then
     return jsonb_build_object('status', 'no_active_event');
   end if;
@@ -86,6 +88,7 @@ $$;
 -- -------------------------------------------------------------
 create or replace function public.register_and_checkin(
   p_token                text,
+  p_series               text,
   p_email                text,
   p_first_name           text,
   p_last_name            text,
@@ -107,7 +110,7 @@ declare
   v_last  text;
   v_rec   public.attendees%rowtype;
 begin
-  v_event := public._active_event(p_token);
+  v_event := public._active_event(p_token, p_series);
   if v_event is null then
     return jsonb_build_object('status', 'no_active_event');
   end if;
