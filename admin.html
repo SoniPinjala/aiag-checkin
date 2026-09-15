@@ -147,6 +147,11 @@
     #roster td:nth-child(5) .btn { width: 100%; min-height: 46px; }
   }
 
+  /* the parenthetical is guidance, not a second label -- it must
+     not compete with the field name */
+  label .soft { font-weight: 500; text-transform: none; letter-spacing: 0;
+                color: var(--text-faint); font-size: 11.5px; }
+
   .stale { color: var(--warn); }
   .login { max-width: 400px; margin: 9vh auto 0; }
 </style>
@@ -159,15 +164,23 @@
     <img src="assets/cada-logo.png" alt="Center for Agricultural Data Analytics"
          style="height:40px;width:auto;max-width:100%;margin-bottom:18px;opacity:.95">
     <h1>Staff sign-in</h1>
-    <p class="sub">Accounts are created by hand in Supabase. There is no self-signup.</p>
+    <!-- Written for the person signing in, not for whoever set it
+         up. The old copy named Supabase, which means nothing to a
+         volunteer on the door and reads as an error when it is
+         the first thing you see. -->
+    <p class="sub">Ask an organizer if you need access.</p>
     <form id="login-form" novalidate>
       <div class="field">
-        <label for="l-email">Email</label>
-        <input id="l-email" type="email" autocomplete="username" required>
+        <label for="l-email">Username <span class="soft">(your email address)</span></label>
+        <input id="l-email" type="email" inputmode="email" autocomplete="username"
+               autocapitalize="off" autocorrect="off" spellcheck="false"
+               placeholder="you@uark.edu" required>
       </div>
       <div class="field">
         <label for="l-pass">Password</label>
-        <input id="l-pass" type="password" autocomplete="current-password" required>
+        <input id="l-pass" type="password" autocomplete="current-password"
+               placeholder="e.g. garnet-indigo-cedar-7071" required>
+        <p class="hint">Lost it? An organizer can issue a new one.</p>
       </div>
       <p class="error" id="l-err" role="alert"></p>
       <button class="btn" type="submit" id="l-btn">Sign in</button>
