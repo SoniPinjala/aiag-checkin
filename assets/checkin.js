@@ -45,6 +45,15 @@
     el.hidden = el.dataset.series !== series;
   });
 
+  // Name the event in the header as soon as the series is known,
+  // not only on a successful lookup. This line is the one thing
+  // a person can glance at to confirm they are at the right
+  // desk -- it must be right even when the token is wrong.
+  if (EVENT_LABEL) {
+    const k = document.querySelector(".brand .kicker");
+    if (k) k.textContent = EVENT_LABEL + " \u00b7 Check-In";
+  }
+
   /* ---- state machine -------------------------------------- */
   const STATES = ["s-email", "s-register", "s-success", "s-already", "s-error"];
   let lastAction = null;          // for Retry
@@ -308,13 +317,6 @@
     fail(null, "This page needs the link from the QR code on the poster. " +
                "Please scan it, or ask a staff member for help.");
   } else {
-    // Name the event on screen. Two check-in desks three days
-    // apart look identical otherwise, and someone at the wrong
-    // one should be able to tell at a glance.
-    if (EVENT_LABEL) {
-      const k = document.querySelector(".brand .kicker");
-      if (k) k.textContent = EVENT_LABEL + " \u00b7 Check-In";
-    }
     $("email").focus();
   }
 })();
