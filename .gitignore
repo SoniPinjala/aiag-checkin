@@ -1,0 +1,10 @@
+# NEVER commit this -- it holds the service role key, which
+# bypasses every RLS policy in supabase/03_policies.sql
+.env
+
+node_modules/
+qr-*.png
+qr-*.svg
+*.csv
+!tools/fixtures/*.csv
+.DS_Store

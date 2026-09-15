@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0A0E14">
+<meta name="robots" content="noindex, nofollow">
+<title>Staff Dashboard — AI in Agriculture Symposium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css">
+<style>
+  /* Admin is data-dense, so it opts out of the centered card layout. */
+  .admin { max-width: 1180px; margin: 0 auto; padding: 22px 18px 70px; position: relative; z-index: 1; }
+
+  .topbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; }
+  .topbar h1 { font-size: 21px; margin: 0; flex: 1 1 auto; }
+  .topbar .kicker { font-family: var(--mono); font-size: 10.5px; letter-spacing:.18em;
+                    text-transform: uppercase; color: var(--cyan); display: block; margin-bottom: 3px; }
+  .topbar select { width: auto; min-width: 210px; min-height: 42px; font-size: 14.5px; padding: 8px 40px 8px 13px; }
+  .topbar .btn  { width: auto; min-height: 42px; font-size: 14px; padding: 9px 16px; }
+
+  /* min-width:0 is load-bearing: grid and flex children default to
+     min-width:auto, which makes the TRACK grow to fit a wide child
+     instead of letting that child's own overflow-x scroll. Without
+     it the whole page scrolls sideways on a phone. */
+  .panel { background: linear-gradient(180deg, var(--surface-2), var(--surface));
+           border: 1px solid var(--line); border-radius: 15px; padding: 18px 18px 16px;
+           min-width: 0; }
+  .panel h2 { margin: 0 0 3px; font-size: 14px; font-weight: 650; letter-spacing: .01em; }
+  .panel .note { margin: 0 0 15px; font-size: 12.5px; color: var(--text-faint); }
+
+  .tiles { display: grid; gap: 12px; margin-bottom: 18px;
+           grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); }
+  .tile { background: linear-gradient(180deg, var(--surface-2), var(--surface));
+          border: 1px solid var(--line); border-radius: 14px; padding: 15px 16px; }
+  .tile .k { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+             color: var(--text-dim); margin-bottom: 7px; }
+  .tile .v { font-size: 31px; font-weight: 700; letter-spacing: -.03em; line-height: 1;
+             font-variant-numeric: tabular-nums; }
+  .tile .d { font-size: 12px; color: var(--text-faint); margin-top: 6px; }
+  .tile.hero .v { color: var(--cyan); font-size: 37px; }
+
+  /* minmax(0,…) not 1fr: a bare 1fr track has an auto minimum and
+     grows to fit a wide child, which would push the whole page
+     sideways instead of letting the chart scroll inside it. */
+  .grid2 { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr);
+           margin-bottom: 18px; }
+  @media (min-width: 880px) {
+    .grid2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  }
+  .span2 { grid-column: 1 / -1; }
+
+  /* chart plumbing */
+  .chart { position: relative; width: 100%; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  /* Squeezed below ~560px the axis labels turn to mush, so the
+     chart keeps its readable width and scrolls sideways instead.
+     The page itself never scrolls horizontally. */
+  @media (max-width: 620px) {
+    #c-arrivals { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    #c-arrivals svg { min-width: 560px; }
+  }
+  .tip { position: absolute; pointer-events: none; z-index: 5; opacity: 0;
+         transition: opacity .12s; transform: translate(-50%, -115%);
+         background: #05090F; border: 1px solid var(--line); border-radius: 9px;
+         padding: 7px 10px; font-size: 12.5px; white-space: nowrap;
+         box-shadow: 0 10px 26px -8px #000; }
+  .tip b { font-variant-numeric: tabular-nums; }
+  .tip .t { color: var(--text-faint); font-family: var(--mono); font-size: 11px; display:block; }
+  .empty { color: var(--text-faint); font-size: 13px; padding: 26px 0; text-align: center; }
+
+  /* search + roster */
+  .searchbar { display: flex; gap: 10px; margin-bottom: 14px; }
+  .searchbar input { min-height: 46px; font-size: 15px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase;
+       color: var(--text-dim); font-weight: 600; padding: 0 10px 9px 0; }
+  td { padding: 9px 10px 9px 0; border-top: 1px solid rgba(255,255,255,.07); vertical-align: middle; }
+  td .nm { font-weight: 600; }
+  td .em { color: var(--text-faint); font-size: 12px; font-family: var(--mono); }
+  .pill { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .pill.in   { background: rgba(52,211,153,.14); color: var(--ok);     border: 1px solid rgba(52,211,153,.3); }
+  .pill.out  { background: rgba(255,255,255,.05); color: var(--text-dim); border: 1px solid var(--line); }
+  .pill.pre  { background: rgba(64,152,212,.14); color: #7FBBE6; border: 1px solid rgba(64,152,212,.3); }
+  .pill.walk { background: rgba(199,67,87,.15);  color: #E0788A; border: 1px solid rgba(199,67,87,.32); }
+  .mini { width: auto; min-height: 36px; padding: 7px 13px; font-size: 13px; border-radius: 9px; }
+  .tablewrap { overflow-x: auto; }
+
+  .stale { color: var(--warn); }
+  .login { max-width: 400px; margin: 9vh auto 0; }
+</style>
+</head>
+<body>
+
+<!-- ── login gate ────────────────────────────────────────── -->
+<div class="wrap" id="gate">
+  <main class="card login">
+    <h1>Staff sign-in</h1>
+    <p class="sub">Accounts are created by hand in Supabase. There is no self-signup.</p>
+    <form id="login-form" novalidate>
+      <div class="field">
+        <label for="l-email">Email</label>
+        <input id="l-email" type="email" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="l-pass">Password</label>
+        <input id="l-pass" type="password" autocomplete="current-password" required>
+      </div>
+      <p class="error" id="l-err" role="alert"></p>
+      <button class="btn" type="submit" id="l-btn">Sign in</button>
+    </form>
+  </main>
+</div>
+
+<!-- ── dashboard ─────────────────────────────────────────── -->
+<div class="admin" id="dash" hidden>
+
+  <div class="topbar">
+    <div style="flex:1 1 auto">
+      <span class="kicker">Staff Dashboard</span>
+      <h1 id="ev-name">&nbsp;</h1>
+    </div>
+    <select id="ev-pick" aria-label="Select event year"></select>
+    <button class="btn ghost mini" id="btn-refresh" type="button">Refresh</button>
+    <button class="btn mini" id="btn-csv" type="button">Export CSV</button>
+    <button class="btn ghost mini" id="btn-out" type="button">Sign out</button>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="grid2">
+    <section class="panel span2">
+      <h2>Arrival curve</h2>
+      <p class="note">Check-ins per 15 minutes. The best predictor you&rsquo;ll have for how
+        to staff the door next year.</p>
+      <div class="chart" id="c-arrivals"></div>
+    </section>
+
+    <section class="panel">
+      <h2>How did you hear about this event?</h2>
+      <p class="note">Which channels actually brought people in.</p>
+      <div class="chart" id="c-heard"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Top organizations</h2>
+      <p class="note">Who is in the room.</p>
+      <div class="chart" id="c-orgs"></div>
+    </section>
+
+    <section class="panel span2" id="p-diet">
+      <h2>Dietary restrictions</h2>
+      <p class="note">Hand this to catering before lunch.</p>
+      <div id="diet-list"></div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Find someone &amp; check them in</h2>
+    <p class="note">For typo&rsquo;d emails, dead phones, and anyone the QR flow
+      let down. Search by name or email.</p>
+    <div class="searchbar">
+      <input id="q" type="text" placeholder="Start typing a name or email&hellip;"
+             autocomplete="off" spellcheck="false">
+    </div>
+    <div class="tablewrap"><table id="roster">
+      <thead><tr><th>Name</th><th>Organization</th><th>Source</th><th>Status</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p class="empty" id="roster-empty" hidden>No matches.</p>
+  </section>
+
+  <p class="foot" id="footnote"></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="assets/config.js"></script>
+<script src="assets/charts.js"></script>
+<script src="assets/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+# Supabase pauses free projects after ~7 days of inactivity.
+# This daily ping means that never happens -- which is also what
+# makes the project still be here next September. Leave it on
+# year-round; it costs nothing.
+#
+# There are deliberately NO GitHub secrets here. The values it
+# needs are the project URL and the publishable key, both of
+# which already ship to every phone in assets/config.js. Storing
+# a public value as a "secret" would imply a secrecy that does
+# not exist, and would mean two copies that can drift apart.
+# config.js is the single source of truth.
+#
+# The SECRET key is the one that must never be here -- it lives
+# only in a local, gitignored .env.
+name: keepalive
+
+on:
+  schedule:
+    - cron: "17 13 * * *"     # 13:17 UTC daily, off the hour to dodge peak
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read connection details from assets/config.js
+        id: cfg
+        run: |
+          url=$(sed -n 's/.*SUPABASE_URL: *"\([^"]*\)".*/\1/p' assets/config.js)
+          key=$(sed -n 's/.*SUPABASE_ANON_KEY: *"\([^"]*\)".*/\1/p' assets/config.js)
+          if [ -z "$url" ] || [ -z "$key" ] || case "$url" in *YOUR-PROJECT-REF*) true;; *) false;; esac; then
+            echo "assets/config.js still has placeholder values — fill it in."
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+
+      - name: Ping the keepalive RPC
+        run: |
+          code=$(curl -s -o /tmp/out -w "%{http_code}" -X POST \
+            "${{ steps.cfg.outputs.url }}/rest/v1/rpc/keepalive" \
+            -H "apikey: ${{ steps.cfg.outputs.key }}" \
+            -H "Content-Type: application/json" -d '{}')
+          echo "HTTP $code"; cat /tmp/out; echo
+          # A paused project answers 5xx -- fail loudly so the
+          # weekly email tells you before the event does.
+          test "$code" = "200"

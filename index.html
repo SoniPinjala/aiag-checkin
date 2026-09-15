@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0E14">
+<meta name="robots" content="noindex, nofollow">
+<title>Check In — AI in Agriculture Symposium 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">
+    <img src="assets/cada-logo.png" alt="Center for Agricultural Data Analytics" onerror="this.style.display='none'">
+    <span class="kicker">Symposium 2026 &middot; Check-In</span>
+  </div>
+
+  <main class="card">
+
+    <!-- ── STATE 1 ─ email ─────────────────────────────────── -->
+    <section id="s-email">
+      <h1>Welcome</h1>
+      <p class="sub">Enter the email you registered with and you&rsquo;re done.</p>
+      <form id="email-form" novalidate>
+        <div class="field">
+          <label for="email">Email address <span class="req">*</span></label>
+          <input id="email" name="email" type="email" inputmode="email"
+                 autocomplete="email" autocapitalize="off" autocorrect="off"
+                 spellcheck="false" placeholder="you@example.com" required>
+          <p class="error" id="email-err" role="alert"></p>
+        </div>
+        <button class="btn" type="submit" id="email-btn">Check in</button>
+      </form>
+    </section>
+
+    <!-- ── STATE 2 ─ registration ──────────────────────────── -->
+    <section id="s-register" hidden>
+      <h1>Let&rsquo;s get you registered</h1>
+      <p class="sub">We don&rsquo;t have that email yet. Just the first three are
+        required &mdash; skip the rest if you&rsquo;re in a hurry.</p>
+
+      <form id="reg-form" novalidate>
+        <div class="field">
+          <label for="r-email">Email <span class="req">*</span></label>
+          <input id="r-email" type="email" disabled>
+        </div>
+
+        <div class="field">
+          <label for="r-first">First name <span class="req">*</span></label>
+          <input id="r-first" type="text" autocomplete="given-name" required>
+        </div>
+
+        <div class="field">
+          <label for="r-last">Last name <span class="req">*</span></label>
+          <input id="r-last" type="text" autocomplete="family-name" required>
+        </div>
+
+        <div class="field">
+          <label for="r-title">Job title</label>
+          <input id="r-title" type="text" autocomplete="organization-title">
+        </div>
+
+        <div class="field">
+          <label for="r-org">Company / organization</label>
+          <input id="r-org" type="text" autocomplete="organization">
+        </div>
+
+        <div class="field">
+          <label for="r-acad">Academic background / field of study</label>
+          <input id="r-acad" type="text">
+        </div>
+
+        <div class="field">
+          <label id="rec-label">Attending the 5&nbsp;PM reception?</label>
+          <div class="choice" role="group" aria-labelledby="rec-label">
+            <button type="button" id="rec-yes" aria-pressed="false">Yes</button>
+            <button type="button" id="rec-no"  aria-pressed="false">No</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="r-diet">Dietary restrictions</label>
+          <input id="r-diet" type="text" placeholder="Vegetarian, gluten-free, allergies&hellip;">
+        </div>
+
+        <div class="field">
+          <label for="r-heard">How did you hear about this event?</label>
+          <select id="r-heard">
+            <option value="">Select&hellip;</option>
+            <option>Departmental Announcement</option>
+            <option>Classmate</option>
+            <option>Email newsletter</option>
+            <option>Social media (Facebook, Twitter, LinkedIn, etc)</option>
+            <option>Flyer</option>
+            <option value="__other">Other</option>
+          </select>
+          <input id="r-heard-other" type="text" placeholder="Tell us how" hidden
+                 style="margin-top:10px">
+        </div>
+
+        <p class="error" id="reg-err" role="alert"></p>
+        <button class="btn" type="submit" id="reg-btn">Register &amp; check in</button>
+        <div class="btn-row">
+          <button class="btn ghost" type="button" id="reg-back">Use a different email</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ── STATE 3 ─ success ───────────────────────────────── -->
+    <section id="s-success" hidden>
+      <div class="result">
+        <svg class="tick" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="tickGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%"   stop-color="#C74357"/>
+              <stop offset="100%" stop-color="#58A9DE"/>
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="50" r="47"/>
+          <path d="M28 51.5 L43.5 66 L72 35"/>
+        </svg>
+        <h2>You&rsquo;re in<span class="who" id="ok-name"></span></h2>
+        <p id="ok-msg">Enjoy the symposium.</p>
+        <div id="ok-badge" class="badge" hidden></div>
+      </div>
+      <div class="btn-row" style="margin-top:26px">
+        <button class="btn ghost" type="button" id="ok-next">Check in someone else</button>
+      </div>
+    </section>
+
+    <!-- ── STATE 4 ─ already checked in ────────────────────── -->
+    <section id="s-already" hidden>
+      <div class="result">
+        <svg class="tick" viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="47" style="stroke:#58A9DE;opacity:.45"/>
+          <path d="M28 51.5 L43.5 66 L72 35" style="stroke:#58A9DE;opacity:.45"/>
+        </svg>
+        <h2>Already checked in<span class="who" id="dup-name"></span></h2>
+        <p>You&rsquo;re all set &mdash; no need to do anything else.</p>
+        <p class="stamp" id="dup-stamp"></p>
+        <div id="dup-badge" class="badge muted" hidden></div>
+      </div>
+      <div class="btn-row" style="margin-top:26px">
+        <button class="btn ghost" type="button" id="dup-next">Check in someone else</button>
+      </div>
+    </section>
+
+    <!-- ── error / retry ───────────────────────────────────── -->
+    <section id="s-error" hidden>
+      <div class="result">
+        <h2 style="color:var(--err)">Something went wrong</h2>
+        <p id="fail-msg">We couldn&rsquo;t reach the server. The wifi here can be
+          patchy &mdash; give it another try.</p>
+      </div>
+      <div class="btn-row" style="margin-top:24px">
+        <button class="btn" type="button" id="fail-retry">Try again</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn ghost" type="button" id="fail-start">Start over</button>
+      </div>
+    </section>
+
+  </main>
+
+  <p class="foot">
+    Sept 21, 2026 &middot; Don Tyson Center for Agricultural Sciences<br>
+    Trouble checking in? Find a staff member at the front desk.
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="assets/config.js"></script>
+<script src="assets/checkin.js"></script>
+</body>
+</html>

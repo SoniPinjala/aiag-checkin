@@ -1,0 +1,15 @@
+{
+  "name": "aiag-checkin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "QR check-in and analytics for the Arkansas AI in Agriculture Symposium",
+  "type": "module",
+  "scripts": {
+    "serve":  "python3 -m http.server 8000",
+    "qr":     "node tools/make-qr.mjs",
+    "import": "node tools/import-prereg.mjs"
+  },
+  "devDependencies": {
+    "qrcode": "^1.5.4"
+  }
+}

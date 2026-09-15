@@ -1,0 +1,10 @@
+ID,Start time,Completion time,Email,Name,Last modified time,First Name,Last Name,Email,Job Title,Company/Organization,Academic background/field of study,"Are you interested giving a lightning talk? Include your abstract below.",Are you planning to attend the 5 PM reception?,Do you have any dietary restrictions?,How did you hear about this event?
+1,9/2/26 10:14:02,9/2/26 10:16:40,,,,Dana,Whitfield,Dana.Whitfield@uark.edu,Assistant Professor,University of Arkansas,Agronomy,"Yes — ""Sensor fusion for in-field phenotyping"", covering UAV and ground rigs, with results from 2025.",Yes,Vegetarian,Departmental Announcement
+2,9/2/26 11:02:11,9/2/26 11:05:03,,,,Marcus,Oyelaran,m.oyelaran@bayer.com,Data Scientist,Bayer Crop Science,"Computer Science, ML",,Yes,,Email newsletter
+3,9/3/26 08:41:55,9/3/26 08:44:19,,,,Priya,Raghunathan,PRAGHU@astate.edu,Graduate Student,Arkansas State University,Biosystems Engineering,,No,"Gluten-free, no shellfish",Classmate
+4,9/3/26 09:15:00,9/3/26 09:17:22,,,,Tom,Becker,tbecker@example.org,Farm Manager,"Becker Farms, LLC",,,Yes,,Flyer
+5,9/4/26 14:20:31,9/4/26 14:21:02,,,,Ella,Nakamura,not-an-email,Research Engineer,Tyson Foods,Mechanical Engineering,,Yes,,Social media (Facebook, Twitter, LinkedIn, etc)
+6,9/4/26 15:00:00,9/4/26 15:02:10,,,,,Solberg,r.solberg@uada.edu,Extension Agent,UADA,,,No,,Flyer
+7,9/5/26 07:30:10,9/5/26 07:33:44,,,,Dana,Whitfield,dana.whitfield@UARK.EDU,Associate Professor,University of Arkansas,Agronomy,"Updated abstract: adds a multi-line
+note about the 2026 trial plots.",Yes,Vegetarian,Departmental Announcement
+8,9/5/26 16:12:00,9/5/26 16:14:51,,,,Luis,Ferreira,lferreira@uark.edu,Postdoc,University of Arkansas,"Poultry Science, Automation",,,Peanut allergy,Departmental Announcement
