@@ -47,8 +47,20 @@ create policy staff_read_events      on public.events
 
 -- NOTE: no INSERT or DELETE policy for authenticated, on purpose.
 -- Bulk import goes through tools/import-prereg.mjs with the
--- service role key, which bypasses RLS and runs from a laptop --
--- not from anything reachable on the web.
+-- secret key, which runs from a laptop -- not from anything
+-- reachable on the web.
+
+-- -------------------------------------------------------------
+-- 2b. The importer connects as service_role (that is what the
+--     secret key resolves to). service_role has BYPASSRLS, so
+--     policies never apply to it -- but it still needs a table
+--     GRANT, and with the project's "Automatically expose new
+--     tables" setting OFF it does not get one by default.
+--     Without this the importer fails with:
+--       42501 permission denied for table attendees
+-- -------------------------------------------------------------
+grant all on public.attendees to service_role;
+grant all on public.events    to service_role;
 
 -- -------------------------------------------------------------
 -- 3. Functions. Postgres grants EXECUTE to PUBLIC by default,
